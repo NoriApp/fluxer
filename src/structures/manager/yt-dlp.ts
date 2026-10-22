@@ -134,66 +134,6 @@ export const ensureYtDlp = () => {
   return ytDlpReady;
 };
 
-export const diagnoseYtDlp = async () => {
-  const log = (...args: unknown[]) => console.log('[Nori][diag]', ...args);
-  const tail = (text: unknown, lines = 12) =>
-    String(text ?? '').trim().split('\n').slice(-lines).join('\n');
-
-  const step = async (label: string, binary: string, args: string[], timeout: number) => {
-    const started = Date.now();
-
-    try {
-      const { stdout, stderr } = await execFileAsync(binary, args, {
-        timeout,
-        maxBuffer: 8 * 1024 * 1024,
-      });
-
-      log(`${label}: ok in ${Date.now() - started}ms, stdout ${String(stdout).length} bytes`);
-      log(`${label} stdout: ${tail(stdout, 3).slice(0, 400)}`);
-      if (String(stderr).trim()) log(`${label} stderr:\n${tail(stderr)}`);
-    } catch (error) {
-      const failure = error as { stdout?: string; stderr?: string; killed?: boolean; code?: unknown; message?: string };
-
-      log(
-        `${label}: FAILED in ${Date.now() - started}ms killed=${failure.killed ?? false} code=${String(failure.code)} msg=${failure.message?.split('\n')[0]}`,
-      );
-      if (String(failure.stderr ?? '').trim()) log(`${label} stderr:\n${tail(failure.stderr)}`);
-      if (String(failure.stdout ?? '').trim()) log(`${label} stdout:\n${tail(failure.stdout, 3).slice(0, 400)}`);
-    }
-  };
-
-  try {
-    const binary = await ensureYtDlp();
-
-    log(`arch=${process.arch} node=${process.version} execPath=${process.execPath} bin=${binary}`);
-
-    await step('yt-dlp --version', binary, ['--version'], 30000);
-    await step('ffmpeg -version', 'ffmpeg', ['-version'], 10000);
-    await step(
-      'ytsearch',
-      binary,
-      ['-v', '--no-playlist', '-j', '--flat-playlist', ...COMMON_ARGS, 'ytsearch1:pumapjl mar'],
-      45000,
-    );
-    await step(
-      'scsearch',
-      binary,
-      ['-v', '--no-playlist', '-j', '--flat-playlist', ...COMMON_ARGS, 'scsearch1:pumapjl mar'],
-      45000,
-    );
-    await step(
-      'ytsearch (sem js-runtimes)',
-      binary,
-      ['-v', '--no-playlist', '-j', '--flat-playlist', '--no-warnings', 'ytsearch1:pumapjl mar'],
-      45000,
-    );
-  } catch (error) {
-    log('setup failed:', (error as Error)?.message ?? error);
-  }
-
-  log('done');
-};
-
 const normalize = (value: string, strip = false) =>
   (strip ? value.replace(/\(.*?\)|\[.*?\]/g, ' ') : value)
     .toLowerCase()
@@ -597,33 +537,17 @@ const feedLoadstream = async (
     try {
       arm();
 
-      const requested = Date.now();
-      console.log(`[Nori][debug][loadstream] request at ${cursor}ms`);
-
       const response = await fetch(cursor > 0 ? `${url}&position=${cursor}` : url, {
         headers,
         signal: attempt.signal,
       });
-
-      console.log(
-        `[Nori][debug][loadstream] headers after ${Date.now() - requested}ms status=${response.status} type=${response.headers.get('content-type')} length=${response.headers.get('content-length')}`,
-      );
 
       if (!response.ok || !response.body) {
         const detail = (await response.text().catch(() => '')).replace(/\s+/g, ' ').slice(0, 300);
         throw new Error(`loadstream status ${response.status} ${detail}`.trim());
       }
 
-      let firstPart = true;
-
       for await (const part of response.body as unknown as AsyncIterable<Uint8Array>) {
-        if (firstPart) {
-          firstPart = false;
-          console.log(
-            `[Nori][debug][loadstream] first body chunk after ${Date.now() - requested}ms (${part.byteLength} bytes)`,
-          );
-        }
-
         arm();
         if (!(await feed.push(part))) break;
       }
