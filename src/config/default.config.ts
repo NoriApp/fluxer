@@ -2,13 +2,13 @@ import { createConfig, ms } from '#nori/structures/data/configuration.js';
 import { env } from '#nori/env.js';
 
 export default createConfig({
-  prefix: 'n.',
+  prefix: '-',
   locale: 'pt-BR',
   color: 0xde1a1b,
   developerIds: ['1562066443707617281'],
   presence: {
     status: 'online',
-    text: 'Radiohead',
+    texts: ["Radiohead", "Nirvana"],
   },
   links: {
         website: "https://noribot.website/",

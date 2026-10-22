@@ -13,6 +13,17 @@ export type NodeConfig = {
   retryAmount: number;
   retryDelay: number;
   requestSignalTimeoutMS: number;
+  enableTrackStreamEndpoint?: boolean;
+  enableLoadStreamEndpoint?: boolean;
+};
+
+export type ClusterConfig = {
+  name: string;
+  totalShards: number;
+  shardIds: number[];
+  shardsPerProcess: number;
+  spawnDelay: number;
+  spawnTimeout: number;
 };
 
 export type Config = {
@@ -22,11 +33,20 @@ export type Config = {
   developerIds: string[];
   presence: {
     status: PresenceStatus;
-    text: string | null;
+    texts: string[];
+  };
+  links: {
+    website: string;
+  };
+  clusters: ClusterConfig[];
+  channels: {
+    guildsId: string;
+    errorsId: string;
   };
   music: {
     defaultSearchPlatform: SearchPlatform;
     defaultVolume: number;
+    maxPlaylistTracks: number;
     disconnectTime: number;
   };
   nodes: NodeConfig[];

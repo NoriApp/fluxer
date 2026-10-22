@@ -1,6 +1,6 @@
 import { Events, type Client } from '@fluxerjs/core';
 import { createEvent, shard } from '#base';
-import { setClusterStatus } from '#nori/structures/functions/client/setClusterStatus.js';
+import { startClusterStatusRotation } from '#nori/structures/functions/client/setClusterStatus.js';
 import { ensureYtDlp } from '#nori/structures/manager/yt-dlp.js';
 import { initLavalink } from '#nori/structures/manager/lavalink.js';
 
@@ -13,7 +13,7 @@ createEvent({
 
     console.log(`[Nori] Logged in as ${client.user.username}.`);
 
-    setClusterStatus(client);
+    startClusterStatusRotation(client);
     shard?.notifyReady();
 
     await ensureYtDlp().catch((error) => {
