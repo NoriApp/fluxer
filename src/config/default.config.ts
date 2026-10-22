@@ -8,7 +8,7 @@ export default createConfig({
   developerIds: ['1562066443707617281'],
   presence: {
     status: 'online',
-    texts: ['Radiohead', 'Nirvana', 'Deftones'],
+    texts: ['Radiohead', 'Nirvana', 'Deftones', 'The Smile'],
   },
   links: {
     website: 'https://noribot.website/',
