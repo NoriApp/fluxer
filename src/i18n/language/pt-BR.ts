@@ -1,6 +1,6 @@
 export default {
   general: {
-    error: 'Ocorreu um erro ao executar o comando.',
+    error: '> [!CAUTION]\n> Muito obrigado por reportar este erro! Ele foi encaminhado para minha equipe de desenvolvedores.',
     guildOnly: 'Este comando só pode ser usado em servidores.',
     noPermission: 'Você não tem permissão para usar este comando.',
     mention: (prefix: string) => `Olá! Eu sou a **Nori**, um bot multifunções. Use \`${prefix}help\` para ver os comandos.`,

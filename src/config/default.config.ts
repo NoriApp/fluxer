@@ -10,6 +10,9 @@ export default createConfig({
     status: 'online',
     text: 'Radiohead',
   },
+  links: {
+        website: "https://noribot.website/",
+    },
   clusters: [
     {
       name: 'Valhalla',
@@ -20,6 +23,10 @@ export default createConfig({
       spawnTimeout: ms('30s'),
     },
   ],
+  channels: {
+        guildsId: "1562081003609001985",
+        errorsId: "1562699833427374081",
+    },
   music: {
     defaultSearchPlatform: 'spsearch',
     defaultVolume: 100,

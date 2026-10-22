@@ -29,7 +29,7 @@ createCommand({
     if (target) {
       const found = ctx.commands.get(target);
 
-      if (!found) {
+      if (!found || found.hidden) {
         await ctx.reply(h.notFound(target));
         return;
       }
@@ -61,9 +61,9 @@ createCommand({
       return;
     }
 
-    const unique = [...new Set(ctx.commands.values())].sort((a, b) =>
-      a.name.localeCompare(b.name),
-    );
+    const unique = [...new Set(ctx.commands.values())]
+      .filter((item) => !item.hidden)
+      .sort((a, b) => a.name.localeCompare(b.name));
 
     const groups = new Map<string, string[]>();
 

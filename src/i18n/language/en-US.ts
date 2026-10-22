@@ -2,7 +2,7 @@ import type ptBR from '#nori/i18n/language/pt-BR.js';
 
 export default {
   general: {
-    error: 'An error occurred while running the command.',
+    error: '> [!CAUTION]\n> Thank you so much for reporting this bug! It has been forwarded to my development team.',
     guildOnly: 'This command can only be used in servers.',
     noPermission: "You don't have permission to use this command.",
     mention: (prefix: string) => `Hi! I'm **Nori**, a multifunctional bot. Use \`${prefix}help\` to see my commands.`,

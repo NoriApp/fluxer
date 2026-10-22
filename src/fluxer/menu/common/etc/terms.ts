@@ -2,8 +2,8 @@ import { EmbedBuilder, type Message } from '@fluxerjs/core';
 import config from '#nori/config/default.config.js';
 import { db } from '#nori/db/index.js';
 
-const TERMS_URL = 'https://noribot.xyz/terms';
-const PRIVACY_URL = 'https://noribot.xyz/privacy';
+const TERMS_URL = `${config.links.website}terms`;
+const PRIVACY_URL = `${config.links.website}privacy`;
 const TIMEOUT = 5 * 60 * 1000;
 const REACTION_DELAY = 400;
 const REACTION_ATTEMPTS = 3;

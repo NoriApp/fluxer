@@ -42,6 +42,7 @@ const block = (text: string) => `\`\`\`js\n${text}\n\`\`\``;
 createCommand({
   name: 'eval',
   initTerms: false,
+  hidden: true,
   run: async (ctx) => {
     if (!(config.developerIds as readonly string[]).includes(ctx.user.id)) return;
 

@@ -49,6 +49,7 @@ export type Command = {
   descriptionLocalizations?: Descriptions;
   aliases?: string[];
   initTerms?: boolean;
+  hidden?: boolean;
   run: (ctx: CommandContext) => Promise<void> | void;
 };
 
