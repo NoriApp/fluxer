@@ -1,0 +1,6 @@
+.env.local
+.env
+.env.dev
+
+project.zip
+/node_modules
