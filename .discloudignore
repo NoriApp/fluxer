@@ -1,0 +1,5 @@
+README.MD
+/.git
+LICENSE
+.gitignore
+.env.example
