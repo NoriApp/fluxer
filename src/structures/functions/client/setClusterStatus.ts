@@ -9,7 +9,8 @@ export const setClusterStatus = (client: Client) => {
   const text = texts[textIndex % texts.length];
   textIndex++;
 
-  const shardId = shard?.ids[0];
+  const shardId = shard?.ids?.[0];
+
   const cluster =
     shardId === undefined
       ? undefined
