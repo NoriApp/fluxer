@@ -1,9 +1,12 @@
 import type { Client } from '@fluxerjs/core';
 import { shard } from '#base';
+import { publishShardStats } from '#nori/structures/function/client/info/shard.js';
 
 let textIndex = 0;
 
 export const setClusterStatus = (client: Client) => {
+  publishShardStats(client);
+
   const { status, texts } = config.presence;
 
   const shardId = shard?.ids?.[0];

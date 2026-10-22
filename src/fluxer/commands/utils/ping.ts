@@ -3,6 +3,7 @@ import { createCommand } from '#base';
 import config from '#nori/config/default.config.js';
 import { Category, setDescription } from '#nori/lib/category.js';
 import { getNodeStatus } from '#nori/structures/manager/lavalink.js';
+import { getShardInfo, getTotalGuilds } from '#nori/structures/function/client/info/shard.js';
 
 const formatBytes = (bytes: number) =>
   bytes >= 1024 ** 3
@@ -67,6 +68,14 @@ createCommand({
     ]);
 
     const memory = process.memoryUsage();
+    const shardInfo = getShardInfo();
+
+    const shardLabel = [
+      shardInfo.id === undefined ? null : `Shard ${shardInfo.id}`,
+      shardInfo.name,
+    ]
+      .filter(Boolean)
+      .join(' · ');
 
     const nodeLines = node.online
       ? [
@@ -99,9 +108,12 @@ createCommand({
             `${p.ram}: ${formatBytes(memory.rss)}`,
             `${p.heap}: ${formatBytes(memory.heapUsed)}`,
             `${p.uptime}: ${formatDuration(ctx.client.uptime ?? 0)}`,
-            `${p.servers}: ${ctx.client.guilds.size}`,
+            `${p.servers}: ${getTotalGuilds(ctx.client)}`,
+            shardLabel,
             `Node.js: ${process.version}`,
-          ].join('\n'),
+          ]
+            .filter(Boolean)
+            .join('\n'),
           inline: true,
         },
         {
