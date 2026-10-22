@@ -1,6 +1,6 @@
 import type { Client } from '@fluxerjs/core';
 import { shard } from '#base';
-import { publishShardStats } from '#nori/structures/function/client/info/shard.js';
+import { publishShardStats } from '#nori/structures/functions/client/info/shard.js';
 
 let textIndex = 0;
 

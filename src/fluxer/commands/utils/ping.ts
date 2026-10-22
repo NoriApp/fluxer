@@ -3,7 +3,7 @@ import { createCommand } from '#base';
 import config from '#nori/config/default.config.js';
 import { Category, setDescription } from '#nori/lib/category.js';
 import { getNodeStatus } from '#nori/structures/manager/lavalink.js';
-import { getShardInfo, getTotalGuilds } from '#nori/structures/function/client/info/shard.js';
+import { getShardInfo, getTotalGuilds } from '#nori/structures/functions/client/info/shard.js';
 
 const formatBytes = (bytes: number) =>
   bytes >= 1024 ** 3
