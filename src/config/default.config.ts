@@ -8,25 +8,33 @@ export default createConfig({
   developerIds: ['1562066443707617281'],
   presence: {
     status: 'online',
-    texts: ["Radiohead", "Nirvana"],
+    texts: ['Radiohead', 'Nirvana', 'Deftones'],
   },
   links: {
-        website: "https://noribot.website/",
-    },
+    website: 'https://noribot.website/',
+  },
   clusters: [
     {
       name: 'Valhalla',
-      totalShards: 1,
+      totalShards: 2,
       shardIds: [0],
+      shardsPerProcess: 1,
+      spawnDelay: ms('5s'),
+      spawnTimeout: ms('30s'),
+    },
+    {
+      name: 'Ragnarok',
+      totalShards: 2,
+      shardIds: [1],
       shardsPerProcess: 1,
       spawnDelay: ms('5s'),
       spawnTimeout: ms('30s'),
     },
   ],
   channels: {
-        guildsId: "1562081003609001985",
-        errorsId: "1562699833427374081",
-    },
+    guildsId: '1562081003609001985',
+    errorsId: '1562699833427374081',
+  },
   music: {
     defaultSearchPlatform: 'spsearch',
     defaultVolume: 100,
