@@ -7,7 +7,7 @@ export default createConfig({
   color: 0xde1a1b,
   developerIds: ['1562066443707617281'],
   presence: {
-    status: 'online',
+    status: 'dnd',
     texts: ['lost in my own world'],
   },
   links: {
