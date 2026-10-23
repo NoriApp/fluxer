@@ -160,14 +160,14 @@ const playTrack = async (queue: GuildQueue, track: QueueTrack) => {
     () => openNodeYoutube(queue.guildId, track, resumeFrom, () => skipped),
   ]);
 
-  attempts.push(['yt-dlp', () => openYtDlp(queue.guildId, track, resumeFrom)]);
-
   if (encoded) {
     attempts.push([
       'loadstream-resume',
       async () => (resumeFrom > 0 ? openLoadstream(queue.guildId, track, resumeFrom, true) : null),
     ]);
   }
+
+  attempts.push(['yt-dlp', () => openYtDlp(queue.guildId, track, resumeFrom)]);
 
   for (const [name, open] of attempts) {
     if (skipped) {
