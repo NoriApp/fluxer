@@ -19,10 +19,10 @@ export const PREFIX = loadedConfig.prefix;
 const FLUXER_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), 'fluxer');
 
 export const client = new Client();
-export const voiceManager = getVoiceManager(client);
 export const shard = process.send
   ? attachShardClientUtil(client as unknown as Parameters<typeof attachShardClientUtil>[0])
   : null;
+export const voiceManager = getVoiceManager(client, { shardId: shard?.ids?.[0] ?? 0 });
 export const commands = new Map<string, RegisteredCommand>();
 
 const events: EventDefinition[] = [];
