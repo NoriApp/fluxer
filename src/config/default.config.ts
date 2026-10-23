@@ -5,6 +5,7 @@ export default createConfig({
   prefix: '-',
   locale: 'en-US',
   color: 0xDB0912,
+  inviteUrl: 'https://web.fluxer.app/oauth2/authorize?client_id=1562075950991020032&scope=bot&permissions=18014673390914888',
   developerIds: ['1562066443707617281'],
   presence: {
     status: 'dnd',

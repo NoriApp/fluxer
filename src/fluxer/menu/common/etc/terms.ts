@@ -1,6 +1,7 @@
 import { EmbedBuilder, type Message } from '@fluxerjs/core';
 import config from '#nori/config/default.config.js';
 import { db } from '#nori/db/index.js';
+import { resolveLanguage } from '#nori/i18n/index.js';
 
 const TERMS_URL = `${config.links.website}terms`;
 const PRIVACY_URL = `${config.links.website}privacy`;
@@ -8,10 +9,20 @@ const TIMEOUT = 5 * 60 * 1000;
 const REACTION_DELAY = 400;
 const REACTION_ATTEMPTS = 3;
 
-type LanguageOption = { code: string; name: string };
+type LanguageOption = {
+  code: string;
+  name: string;
+};
 
-const PT_BR: LanguageOption = { code: 'pt-BR', name: 'Português (Brasil)' };
-const EN_US: LanguageOption = { code: 'en-US', name: 'English (US)' };
+const PT_BR: LanguageOption = {
+  code: 'pt-BR',
+  name: 'Português (Brasil)',
+};
+
+const EN_US: LanguageOption = {
+  code: 'en-US',
+  name: 'English (US)',
+};
 
 const LANGUAGES: Record<string, LanguageOption> = {
   brazil: PT_BR,
@@ -86,8 +97,11 @@ const expiredEmbed = () =>
 const rejectedEmbed = () =>
   embed('Terms declined', 'You declined the terms. You will not be able to use Nori until you accept them.');
 
-const doneEmbed = (language: string) =>
-  embed('All set!', `Your language was set to **${language}**. You can now use Nori.`);
+const doneEmbed = (language: LanguageOption) => {
+  const { terms } = resolveLanguage(language.code).general;
+
+  return embed(terms.doneTitle, terms.doneDescription(language.name));
+};
 
 const waitForReaction = async (prompt: Message, userId: string, keys: string[]) => {
   const byId = new Map(keys.map((key) => [parseEmoji(key).id, key]));
@@ -151,10 +165,10 @@ export const runTerms = async (message: Message): Promise<TermsResult> => {
   await db.user.findOneAndUpdate(
     { userId: message.author.id },
     { $set: { language: language.code } },
-    { upsert: true, new: true, setDefaultsOnInsert: true },
+    { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true },
   );
 
-  await message.reply({ embeds: [doneEmbed(language.name)] });
+  await message.reply({ embeds: [doneEmbed(language)] });
 
   return 'accepted';
 };

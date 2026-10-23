@@ -6,6 +6,11 @@ export default {
     guildOnly: 'This command can only be used in servers.',
     noPermission: "You don't have permission to use this command.",
     mention: (prefix: string) => `Hi! I'm **Nori**, a multifunctional bot. Use \`${prefix}help\` to see my commands.`,
+    terms: {
+      doneTitle: 'All set!',
+      doneDescription: (language: string) =>
+        `Your language was set to **${language}**. You can now use Nori.`,
+    },
   },
   commands: {
     music: {
@@ -45,18 +50,6 @@ export default {
         gateway: 'Gateway',
         api: 'API',
         message: 'Message',
-        botField: 'Bot',
-        cpu: 'CPU',
-        ram: 'RAM',
-        heap: 'Heap',
-        uptime: 'Uptime',
-        servers: 'Servers',
-        nodeField: (id: string) => `Node ${id}`,
-        status: 'Status',
-        online: 'Online',
-        offline: 'Offline',
-        latency: 'Latency',
-        players: 'Players',
         footer: (username: string) => `Requested by ${username}`,
       },
       language: {
