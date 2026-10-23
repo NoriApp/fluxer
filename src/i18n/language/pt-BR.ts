@@ -9,6 +9,18 @@ export default {
       doneDescription: (language: string) =>
         `Seu idioma foi definido como **${language}**. Agora você já pode usar a Nori.`,
     },
+    permissions: {
+      missing: (permissions: string) =>
+        `Não consigo executar este comando porque me faltam permissões.\nPermissões necessárias: ${permissions}`,
+      names: {
+        ViewChannel: 'Ver Canal',
+        SendMessages: 'Enviar Mensagens',
+        EmbedLinks: 'Inserir Links',
+        AttachFiles: 'Enviar Anexos',
+        Connect: 'Entrar em Canal de Voz',
+        Speak: 'Falar em Canal de Voz',
+      },
+    },
   },
   commands: {
     music: {

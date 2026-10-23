@@ -18,6 +18,9 @@ type PlayResult = 'finished' | 'failed' | 'skipped';
 const END_GRACE_MS = 20000;
 const TAIL_MS = 1200;
 const POLL_MS = 250;
+const TRACKSTREAM_COOLDOWN_MS = 300000;
+
+let trackstreamSkipUntil = 0;
 
 const playSource = (queue: GuildQueue, connection: any, track: QueueTrack, source: AudioSource) =>
   new Promise<PlayResult>((resolve) => {
@@ -115,12 +118,27 @@ const playSource = (queue: GuildQueue, connection: any, track: QueueTrack, sourc
       });
   });
 
+const JOIN_RETRY_DELAY_MS = 1000;
+
+const joinVoice = async (guildId: string, channel: VoiceChannel) => {
+  try {
+    return await voiceManager.join(channel);
+  } catch (error) {
+    console.error('[Nori] voice join failed, retrying once:', (error as Error)?.message ?? error);
+
+    voiceManager.leave(guildId);
+    await new Promise((resolve) => setTimeout(resolve, JOIN_RETRY_DELAY_MS));
+
+    return voiceManager.join(channel);
+  }
+};
+
 const playTrack = async (queue: GuildQueue, track: QueueTrack) => {
   const channel = client.channels.get(queue.voiceChannelId);
   if (!(channel instanceof VoiceChannel)) throw new Error('Voice channel not found.');
 
   if (!queue.connection) {
-    queue.connection = await voiceManager.join(channel);
+    queue.connection = await joinVoice(queue.guildId, channel);
   }
 
   const connection = queue.connection;
@@ -147,6 +165,12 @@ const playTrack = async (queue: GuildQueue, track: QueueTrack) => {
       [
         'trackstream',
         async () => {
+          if (Date.now() < trackstreamSkipUntil) {
+            trackstreamBlocked = true;
+            console.log('[Nori] trackstream on cooldown, skipping.');
+            return null;
+          }
+
           const direct = await openTrackstream(
             nodeAccess(),
             { encoded, uri: track.uri, duration: track.duration },
@@ -231,6 +255,7 @@ const playTrack = async (queue: GuildQueue, track: QueueTrack) => {
 
     if (result === 'failed' && name === 'trackstream') {
       trackstreamBlocked = true;
+      trackstreamSkipUntil = Date.now() + TRACKSTREAM_COOLDOWN_MS;
     }
 
     if (result === 'skipped') {

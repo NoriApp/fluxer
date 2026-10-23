@@ -1,4 +1,4 @@
-import { EmbedBuilder } from '@fluxerjs/core';
+import { EmbedBuilder, GuildChannel } from '@fluxerjs/core';
 import axios from 'axios';
 import { createCommand } from '#base';
 import config from '#nori/config/default.config.js';
@@ -9,6 +9,9 @@ import {
   searchTrack,
   toQueueTrack,
 } from '#nori/structures/manager/lavalink.js';
+
+const VOICE_PERMISSIONS = ['ViewChannel', 'Connect', 'Speak'] as const;
+const TEXT_PERMISSIONS = ['ViewChannel', 'SendMessages', 'EmbedLinks', 'AttachFiles'] as const;
 
 const SPOTIFY_URL = /^https?:\/\/open\.spotify\.com\/(?:intl-[a-z]+\/)?(playlist|album)\/[A-Za-z0-9]+/i;
 
@@ -50,6 +53,7 @@ createCommand({
   aliases: ['p'],
   async run(ctx) {
     const m = ctx.t.commands.music.play;
+    const permissions = ctx.t.general.permissions;
 
     const respond = (embed: EmbedBuilder) => ctx.reply({ embeds: [embed] });
 
@@ -73,6 +77,33 @@ createCommand({
     if (!isLavalinkReady()) {
       await respond(simple(m.playerStarting));
       return;
+    }
+
+    const guild =
+      ctx.client.guilds.get(ctx.guildId) ?? (await ctx.client.guilds.fetch(ctx.guildId).catch(() => null));
+    const me = guild ? (guild.members.me ?? (await guild.fetchMe().catch(() => null))) : null;
+
+    if (me) {
+      const voiceChannel = ctx.client.channels.get(voiceChannelId);
+      const textChannel = ctx.client.channels.get(ctx.channelId);
+
+      const missing = [
+        ...(voiceChannel instanceof GuildChannel
+          ? me.permissionsIn(voiceChannel).missing([...VOICE_PERMISSIONS])
+          : []),
+        ...(textChannel instanceof GuildChannel
+          ? me.permissionsIn(textChannel).missing([...TEXT_PERMISSIONS])
+          : []),
+      ];
+
+      if (missing.length > 0) {
+        const names = [...new Set(missing)].map(
+          (name) => permissions.names[name as keyof typeof permissions.names] ?? name,
+        );
+
+        await respond(simple(permissions.missing(names.join(', ')))).catch(() => null);
+        return;
+      }
     }
 
     const requester = { id: ctx.user.id, username: ctx.user.username };
