@@ -13,7 +13,7 @@ export default {
     },
     permissions: {
       missing: (permissions: string) =>
-        `I can't run this command because I'm missing permissions.\nRequired permissions: ${permissions}`,
+        `> [!WARNING]\n> I don't have sufficient permission to execute this command; I need the following permission(s): ${permissions}`,
       names: {
         ViewChannel: 'View Channel',
         SendMessages: 'Send Messages',
