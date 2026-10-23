@@ -43,6 +43,7 @@ createCommand({
   name: 'eval',
   initTerms: false,
   hidden: true,
+  aliases: ['e', 'ev'],
   run: async (ctx) => {
     if (!(config.developerIds as readonly string[]).includes(ctx.user.id)) return;
 

@@ -56,8 +56,9 @@ export type NodeStatus = {
   memoryAllocated: number;
 };
 
-export const getNodeStatus = async (): Promise<NodeStatus> => {
-  const node = config.nodes[0];
+type NodeConfig = (typeof config.nodes)[number];
+
+const fetchNodeStatus = async (node: NodeConfig): Promise<NodeStatus> => {
   const protocol = node.secure ? 'https' : 'http';
   const started = Date.now();
 
@@ -103,3 +104,7 @@ export const getNodeStatus = async (): Promise<NodeStatus> => {
     return offline;
   }
 };
+
+export const getNodeStatus = () => fetchNodeStatus(config.nodes[0]);
+
+export const getAllNodeStatus = () => Promise.all(config.nodes.map((node) => fetchNodeStatus(node)));
