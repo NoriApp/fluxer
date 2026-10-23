@@ -3,6 +3,7 @@ import { client, commands, createEvent, voiceManager } from '#base';
 import config from '#nori/config/default.config.js';
 import { db } from '#nori/db/index.js';
 import { resolveLanguage } from '#nori/i18n/index.js';
+import { claimMessage } from '#nori/structures/function/client/info/claim.js';
 
 const isBotMention = (content: string, botId?: string) =>
   !!botId && (content === `<@${botId}>` || content === `<@!${botId}>`);
@@ -23,6 +24,8 @@ createEvent({
     const prefix = guild?.prefix || config.prefix;
 
     if (isBotMention(message.content.trim(), client.user?.id)) {
+      if (!(await claimMessage(message.id))) return;
+
       const t = resolveLanguage(user?.language ?? 'en-US');
       await message.reply(t.general.mention(prefix)).catch(() => null);
       return;
@@ -33,6 +36,8 @@ createEvent({
     const [rawName, ...args] = message.content.slice(prefix.length).trim().split(/\s+/);
     const command = commands.get((rawName ?? '').toLowerCase());
     if (!command) return;
+
+    if (!(await claimMessage(message.id))) return;
 
     const t = resolveLanguage(user?.language ?? config.locale);
 
