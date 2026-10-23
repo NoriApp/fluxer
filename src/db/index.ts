@@ -5,7 +5,6 @@ import mongoose from 'mongoose';
 import { env } from '#nori/env.js';
 import type { Guild } from '#nori/db/schemas/guild.js';
 import type { User } from '#nori/db/schemas/user.js';
-import type { MessageClaim } from '#nori/db/schemas/message.js';
 
 const SCHEMAS_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), 'schemas');
 
@@ -100,7 +99,6 @@ connectDatabase().catch((error) => {
 type Models = {
   guild: typeof Guild;
   user: typeof User;
-  messageClaim: typeof MessageClaim;
 };
 
 export const db = new Proxy({} as Models, {

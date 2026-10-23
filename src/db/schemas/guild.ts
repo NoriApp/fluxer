@@ -5,6 +5,7 @@ const guildSchema = new mongoose.Schema(
   {
     guildId: { type: String, required: true, unique: true, index: true },
     prefix: { type: String, default: config.prefix, trim: true, maxlength: 5 },
+    messages: { type: [String], default: [], select: false },
   },
   { timestamps: true },
 );
