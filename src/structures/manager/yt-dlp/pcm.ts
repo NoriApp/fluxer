@@ -152,6 +152,7 @@ const feedLoadstream = async (
     const attempt = new AbortController();
     const abortAttempt = () => attempt.abort();
     let stall: NodeJS.Timeout | null = null;
+    let blocked = false;
 
     const arm = () => {
       if (stall) clearTimeout(stall);
@@ -179,8 +180,11 @@ const feedLoadstream = async (
         if (!(await feed.push(part))) break;
       }
     } catch (error) {
+      const message = (error as Error)?.message ?? String(error);
+      blocked = /HTTP 403|status 403/.test(message);
+
       if (!signal.aborted) {
-        console.error(`[Nori] loadstream at ${cursor}ms failed:`, (error as Error)?.message ?? error);
+        console.error(`[Nori] loadstream at ${cursor}ms failed:`, message);
       }
     } finally {
       if (stall) clearTimeout(stall);
@@ -189,6 +193,7 @@ const feedLoadstream = async (
     }
 
     if (signal.aborted) break;
+    if (blocked && feed.bytes === before) break;
     if (expectedMs <= 0 && feed.bytes > before) break;
     if (expectedMs > 0 && feed.ms >= expectedMs - END_MARGIN_MS) break;
 

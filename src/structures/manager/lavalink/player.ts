@@ -111,6 +111,7 @@ const playTrack = async (queue: GuildQueue, track: QueueTrack) => {
   const encoded = (track.raw as any).encoded as string | undefined;
 
   let resumeFrom = 0;
+  let trackstreamBlocked = false;
 
   const attempts: Array<[string, () => Promise<AudioSource | null>]> = [];
 
@@ -140,7 +141,17 @@ const playTrack = async (queue: GuildQueue, track: QueueTrack) => {
           return openTranscode(queue.guildId, direct.transcodeUrl, track.duration, direct.label);
         },
       ],
-      ['loadstream', () => openLoadstream(queue.guildId, track)],
+      [
+        'loadstream',
+        async () => {
+          if (trackstreamBlocked) {
+            console.log('[Nori] trackstream blocked, skipping loadstream.');
+            return null;
+          }
+
+          return openLoadstream(queue.guildId, track);
+        },
+      ],
     );
   }
 
@@ -190,6 +201,10 @@ const playTrack = async (queue: GuildQueue, track: QueueTrack) => {
     }
 
     const result = await playSource(queue, connection, track, source);
+
+    if (result === 'failed' && name === 'trackstream') {
+      trackstreamBlocked = true;
+    }
 
     if (result === 'skipped') {
       return;
