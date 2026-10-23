@@ -15,6 +15,10 @@ import { clearIdle, notify, scheduleIdle } from './idle.js';
 
 type PlayResult = 'finished' | 'failed' | 'skipped';
 
+const END_GRACE_MS = 20000;
+const TAIL_MS = 1200;
+const POLL_MS = 250;
+
 const playSource = (queue: GuildQueue, connection: any, track: QueueTrack, source: AudioSource) =>
   new Promise<PlayResult>((resolve) => {
     const startedAt = Date.now();
@@ -41,7 +45,30 @@ const playSource = (queue: GuildQueue, connection: any, track: QueueTrack, sourc
       const total = source.fedMs ? source.fedMs() - (source.startMs ?? 0) + 800 : track.duration;
       const remaining = total > 0 ? Math.max(0, total - (Date.now() - begunAt)) : 0;
 
-      timer = setTimeout(() => finish(), remaining);
+      if (!source.stream) {
+        timer = setTimeout(() => finish(), remaining);
+        return;
+      }
+
+      const limit = Date.now() + remaining + END_GRACE_MS;
+
+      const poll = () => {
+        if (done) return;
+
+        const drained = started && !connection.playing;
+
+        if (drained || Date.now() >= limit) {
+          console.log(
+            `[Nori] playback ${drained ? 'drained' : 'timed out'} after ${Math.round((Date.now() - begunAt) / 1000)}s (expected ${Math.round(total / 1000)}s).`,
+          );
+          timer = setTimeout(() => finish(), TAIL_MS);
+          return;
+        }
+
+        timer = setTimeout(poll, POLL_MS);
+      };
+
+      poll();
     };
 
     queue.skip = () => {
