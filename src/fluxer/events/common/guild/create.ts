@@ -2,7 +2,7 @@ import { EmbedBuilder, Events, type Guild } from '@fluxerjs/core';
 import { client, createEvent } from '#base';
 import config from '#nori/config/default.config.js';
 import { db } from '#nori/db/index.js';
-import { markFreshGuild } from '#nori/structures/function/client/info/claim.js';
+import { markFreshGuild } from '#nori/structures/functions/client/info/claim.js';
 
 const STARTUP_GRACE = 15_000;
 const MAX_ATTEMPTS = 10;
