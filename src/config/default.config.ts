@@ -3,8 +3,8 @@ import { env } from '#nori/env.js';
 
 export default createConfig({
   prefix: '-',
-  locale: 'pt-BR',
-  color: 0xde1a1b,
+  locale: 'en-US',
+  color: 0xDB0912,
   developerIds: ['1562066443707617281'],
   presence: {
     status: 'dnd',
