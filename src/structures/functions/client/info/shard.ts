@@ -51,3 +51,16 @@ export const getTotalGuilds = (client: Client) => {
 
   return total || client.guilds.size;
 };
+
+export const ownsGuild = (guildId?: string | null) => {
+  if (!guildId) return true;
+
+  const ids = shard?.ids;
+  const count = shard?.count;
+
+  if (!ids?.length || !count) return true;
+
+  const expected = Number((BigInt(guildId) >> 22n) % BigInt(count));
+
+  return ids.includes(expected);
+};
