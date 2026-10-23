@@ -3,7 +3,7 @@ import { client, commands, createEvent, voiceManager } from '#base';
 import config from '#nori/config/default.config.js';
 import { db } from '#nori/db/index.js';
 import { resolveLanguage } from '#nori/i18n/index.js';
-import { claimMessage } from '#nori/structures/function/client/info/claim.js';
+import { claimMessage } from '#nori/structures/functions/client/info/claim.js';
 
 const isBotMention = (content: string, botId?: string) =>
   !!botId && (content === `<@${botId}>` || content === `<@!${botId}>`);
