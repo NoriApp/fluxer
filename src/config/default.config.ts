@@ -32,7 +32,7 @@ export default createConfig({
     },
   ],
   channels: {
-    guildsId: '1562081003609001985',
+    guildsId: '1563091515159359488',
     errorsId: '1562699833427374081',
   },
   music: {
