@@ -44,6 +44,7 @@ const playSource = (
 
       if (timer) clearTimeout(timer);
       queue.skip = null;
+      queue.playhead = null;
 
       source.close();
       releaseVoice(connection);
@@ -111,6 +112,11 @@ const playSource = (
         started = true;
         begunAt = Date.now();
         queue.current = track;
+        queue.playhead = () =>
+          Math.min(
+            (source.startMs ?? 0) + (Date.now() - begunAt),
+            source.fedMs?.() ?? Number.POSITIVE_INFINITY,
+          );
 
         if (source.url) waitRemaining();
       })
@@ -135,7 +141,7 @@ const joinVoice = async (guildId: string, channel: VoiceChannel) => {
   }
 };
 
-const playTrack = async (queue: GuildQueue, track: QueueTrack) => {
+const playTrack = async (queue: GuildQueue, track: QueueTrack, startFrom = 0) => {
   const channel = client.channels.get(queue.voiceChannelId);
   if (!(channel instanceof VoiceChannel)) throw new Error('Voice channel not found.');
 
@@ -146,9 +152,14 @@ const playTrack = async (queue: GuildQueue, track: QueueTrack) => {
 
   const connection = queue.connection;
 
+  queue.position = startFrom;
+  queue.playhead = null;
+
   let announced: Promise<void> | null = null;
 
   const announce = () => {
+    if (startFrom > 0) return Promise.resolve();
+
     if (!announced) {
       announced = Promise.race([
         sendNowPlaying({
@@ -178,7 +189,7 @@ const playTrack = async (queue: GuildQueue, track: QueueTrack) => {
 
   const encoded = (track.raw as any).encoded as string | undefined;
 
-  let resumeFrom = 0;
+  let resumeFrom = startFrom;
   let trackstreamBlocked = false;
 
   const attempts: Array<[string, () => Promise<AudioSource | null>]> = [];
@@ -188,6 +199,8 @@ const playTrack = async (queue: GuildQueue, track: QueueTrack) => {
       [
         'trackstream',
         async () => {
+          if (resumeFrom > 0) return null;
+
           if (Date.now() < trackstreamSkipUntil) {
             trackstreamBlocked = true;
             console.log('[Nori] trackstream on cooldown, skipping.');
@@ -218,6 +231,8 @@ const playTrack = async (queue: GuildQueue, track: QueueTrack) => {
       [
         'loadstream',
         async () => {
+          if (resumeFrom > 0) return null;
+
           if (trackstreamBlocked) {
             console.log('[Nori] trackstream blocked, skipping loadstream.');
             return null;
@@ -321,12 +336,25 @@ export const run = async (queue: GuildQueue) => {
   while (true) {
     while (queue.tracks.length > 0) {
       const track = queue.tracks.shift()!;
+      let from = 0;
 
-      try {
-        await playTrack(queue, track);
-      } catch (error) {
-        console.error(`[Nori] playTrack failed for "${track.title}":`, (error as Error)?.message ?? error);
-        await notify(queue.textChannelId, `Não consegui tocar **${track.title}**.`);
+      while (true) {
+        try {
+          await playTrack(queue, track, from);
+        } catch (error) {
+          console.error(`[Nori] playTrack failed for "${track.title}":`, (error as Error)?.message ?? error);
+          await notify(queue.textChannelId, `Não consegui tocar **${track.title}**.`);
+          break;
+        }
+
+        if (!queue.resumeSignal) break;
+
+        const replay = await queue.resumeSignal;
+        queue.resumeSignal = null;
+
+        if (!replay) break;
+
+        from = queue.position;
       }
     }
 

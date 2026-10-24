@@ -4,6 +4,7 @@ import config from '#nori/config/default.config.js';
 import { getLanguage, type Language } from '#nori/i18n/index.js';
 import { type GuildQueue } from './types.js';
 import { queues } from './state.js';
+import { releasePause } from './pause.js';
 
 const ALONE_CHECK_MS = 5000;
 
@@ -46,6 +47,7 @@ const closeQueue = (queue: GuildQueue) => {
   clearAlone(queue);
 
   queue.tracks.length = 0;
+  releasePause(queue, false);
   queue.skip?.();
   queue.current = null;
   queue.connection = null;

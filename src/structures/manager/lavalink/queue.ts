@@ -2,6 +2,7 @@ import config from '#nori/config/default.config.js';
 import { voiceManager } from '#base';
 import { queues } from './state.js';
 import { clearAlone, clearIdle, watchAlone } from './idle.js';
+import { releasePause } from './pause.js';
 import { type EnqueueOptions } from './types.js';
 import { run } from './player.js';
 
@@ -25,6 +26,11 @@ export const enqueue = ({ guildId, voiceChannelId, textChannelId, tracks }: Enqu
       aloneTimer: null,
       aloneSeen: false,
       aloneWatcher: null,
+      paused: false,
+      position: 0,
+      playhead: null,
+      resume: null,
+      resumeSignal: null,
       skip: null,
       connection: null,
     };
@@ -48,12 +54,44 @@ export const enqueue = ({ guildId, voiceChannelId, textChannelId, tracks }: Enqu
 export const skipTrack = (guildId: string) => {
   const queue = queues.get(guildId);
 
+  if (queue?.paused) {
+    releasePause(queue, false);
+    return true;
+  }
+
   if (!queue?.skip) {
     return false;
   }
 
   queue.skip();
   return true;
+};
+
+export const pauseQueue = (guildId: string) => {
+  const queue = queues.get(guildId);
+
+  if (!queue?.current || queue.paused || !queue.skip) {
+    return false;
+  }
+
+  queue.position = queue.playhead?.() ?? queue.position;
+  queue.paused = true;
+  queue.resumeSignal = new Promise<boolean>((resolve) => {
+    queue.resume = resolve;
+  });
+  queue.skip();
+
+  return true;
+};
+
+export const resumeQueue = (guildId: string) => {
+  const queue = queues.get(guildId);
+
+  if (!queue?.paused) {
+    return false;
+  }
+
+  return releasePause(queue, true);
 };
 
 export const stopQueue = (guildId: string) => {
@@ -64,6 +102,7 @@ export const stopQueue = (guildId: string) => {
   }
 
   queue.tracks.length = 0;
+  releasePause(queue, false);
   queue.skip?.();
   return true;
 };
@@ -80,6 +119,7 @@ export const destroyQueue = (guildId: string) => {
   clearAlone(queue);
 
   queue.tracks.length = 0;
+  releasePause(queue, false);
   queue.skip?.();
   queue.current = null;
   queue.connection = null;

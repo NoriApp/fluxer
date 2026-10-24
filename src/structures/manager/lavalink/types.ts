@@ -38,6 +38,11 @@ export type GuildQueue = {
   aloneTimer: NodeJS.Timeout | null;
   aloneSeen: boolean;
   aloneWatcher: NodeJS.Timeout | null;
+  paused: boolean;
+  position: number;
+  playhead: (() => number) | null;
+  resume: ((replay: boolean) => void) | null;
+  resumeSignal: Promise<boolean> | null;
   skip: (() => void) | null;
   connection: Awaited<ReturnType<typeof voiceManager.join>> | null;
 };
