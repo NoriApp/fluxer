@@ -1,6 +1,10 @@
 import { createCanvas, loadImage, GlobalFonts } from '@napi-rs/canvas';
 import { resolve } from 'node:path';
+import { EmbedBuilder } from '@fluxerjs/core';
 import { client } from '#base';
+import config from '#nori/config/default.config.js';
+import { getLanguage } from '#nori/i18n/index.js';
+import { getGuildMusic } from '#nori/lib/music.js';
 import type { QueueTrack } from '#nori/structures/manager/lavalink.js';
 
 const fontsDir = './src/fluxer/canvas/fonts/';
@@ -106,6 +110,7 @@ type NowPlayingOptions = {
   guildId: string;
   textChannelId: string;
   track: QueueTrack;
+  ownerId?: string;
 };
 
 const messages = new Map<string, { delete(): Promise<unknown> }>();
@@ -116,14 +121,41 @@ export async function deleteNowPlaying(guildId: string) {
   if (message) await message.delete().catch(() => null);
 }
 
-export async function sendNowPlaying({ guildId, textChannelId, track }: NowPlayingOptions) {
+const trackEmbed = async (track: QueueTrack, ownerId?: string) => {
+  const language = await getLanguage(ownerId ?? track.requester.id);
+  const p = language.general.music.player;
+  const clean = track.title.replace(/[[\]]/g, '');
+  const title = track.uri ? `[${clean}](${track.uri})` : `**${clean}**`;
+
+  const embed = new EmbedBuilder()
+    .setColor(config.color)
+    .setAuthor({ name: p.nowPlaying })
+    .setDescription(`${title}\n${track.author} • ${TimeFormat.toDotted(track.duration)}`)
+    .setFooter({ text: p.requestedBy(track.requester.username) });
+
+  if (track.artworkUrl) embed.setThumbnail(track.artworkUrl);
+
+  return embed;
+};
+
+export async function sendNowPlaying({ guildId, textChannelId, track, ownerId }: NowPlayingOptions) {
   await deleteNowPlaying(guildId);
 
-  if (!track.artworkUrl) return;
+  const { effective } = await getGuildMusic(guildId);
 
-  const image = await trackCanva(track.artworkUrl, track.title, track.author, 0, track.duration);
-  const payload = { files: [{ name: 'track.png', data: image }] };
+  let message: unknown = null;
 
-  const message = await client.channels.send(textChannelId, payload).catch(() => null);
+  if (effective === 'canvas' && track.artworkUrl) {
+    const image = await trackCanva(track.artworkUrl, track.title, track.author, 0, track.duration);
+
+    message = await client.channels
+      .send(textChannelId, { files: [{ name: 'track.png', data: image }] })
+      .catch(() => null);
+  } else {
+    message = await client.channels
+      .send(textChannelId, { embeds: [await trackEmbed(track, ownerId)] })
+      .catch(() => null);
+  }
+
   if (message) messages.set(guildId, message as { delete(): Promise<unknown> });
 }

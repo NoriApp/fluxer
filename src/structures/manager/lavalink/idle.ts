@@ -108,6 +108,15 @@ const evaluate = (queue: GuildQueue, change?: VoiceChange) => {
   announce(queue, (language, time) => language.general.music.player.alone(time)).catch(() => null);
 };
 
+export const handleBotRemoved = (guildId: string) => {
+  const queue = queues.get(guildId);
+
+  if (!queue?.connection) return;
+
+  announce(queue, (language) => language.general.music.player.kicked).catch(() => null);
+  closeQueue(queue);
+};
+
 export const refreshAlone = (guildId: string, change?: VoiceChange) => {
   const queue = queues.get(guildId);
 

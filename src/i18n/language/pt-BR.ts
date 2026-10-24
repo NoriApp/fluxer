@@ -32,6 +32,9 @@ export default {
             .join(' e '),
         queueEnded: (time: string) =>
           `A fila acabou. Você tem ${time} para adicionar outra música antes de eu encerrar o player.`,
+        nowPlaying: 'Tocando agora',
+        requestedBy: (username: string) => `Pedido por ${username}`,
+        kicked: 'Fui expulso da call por um moderador e encerrei o player.',
         alone: (time: string) => `Estou sozinho na call. Se ninguém entrar em ${time}, vou encerrar o player.`,
       },
     },
@@ -133,6 +136,14 @@ export default {
         changed: (language: string) => `Idioma alterado para \`${language}\`.`,
         invalid: (languages: string) => `Idioma inválido. Idiomas disponíveis: ${languages}`,
         failed: 'Não consegui alterar seu idioma agora. Tente novamente.',
+      },
+    },
+    owner: {
+      premium: {
+        usage: (prefix: string) => `Uso correto: \`${prefix}premium <id do servidor> [on|off]\``,
+        status: (guildId: string, enabled: boolean) =>
+          `Premium do servidor \`${guildId}\`: **${enabled ? 'ativado' : 'desativado'}**.`,
+        failed: 'Não consegui alterar o premium agora. Tente novamente.',
       },
     },
   },

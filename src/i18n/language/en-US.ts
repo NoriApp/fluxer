@@ -34,6 +34,9 @@ export default {
             .join(' and '),
         queueEnded: (time: string) =>
           `The queue has ended. You have ${time} to add another song before I close the player.`,
+        nowPlaying: 'Now playing',
+        requestedBy: (username: string) => `Requested by ${username}`,
+        kicked: 'I was removed from the call by a moderator, so I closed the player.',
         alone: (time: string) => `I'm alone in the call. If nobody joins within ${time}, I'll close the player.`,
       },
     },
@@ -136,6 +139,14 @@ export default {
         changed: (language: string) => `Language changed to \`${language}\`.`,
         invalid: (languages: string) => `Invalid language. Available languages: ${languages}`,
         failed: "I couldn't change your language right now. Please try again.",
+      },
+    },
+    owner: {
+      premium: {
+        usage: (prefix: string) => `Correct usage: \`${prefix}premium <server id> [on|off]\``,
+        status: (guildId: string, enabled: boolean) =>
+          `Premium for server \`${guildId}\`: **${enabled ? 'enabled' : 'disabled'}**.`,
+        failed: "I couldn't change the premium right now. Try again.",
       },
     },
   },

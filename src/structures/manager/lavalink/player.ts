@@ -166,6 +166,7 @@ const playTrack = async (queue: GuildQueue, track: QueueTrack, startFrom = 0) =>
           guildId: queue.guildId,
           textChannelId: queue.textChannelId,
           track,
+          ownerId: queue.ownerId,
         }).then(
           () => undefined,
           () => undefined,
