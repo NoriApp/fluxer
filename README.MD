@@ -3,11 +3,11 @@
   <h1>Nori</h1>
   <p>Multipurpose bot for Fluxer.</p>
   <p>
-    <a href="https://noribot.xyz">Website</a>
+    <a href="https://noribot.website">Website</a>
     ·
-    <a href="https://noribot.xyz/terms">Terms of Service</a>
+    <a href="https://noribot.website/terms">Terms of Service</a>
     ·
-    <a href="https://noribot.xyz/privacy">Privacy Policy</a>
+    <a href="https://noribot.website/privacy">Privacy Policy</a>
   </p>
 </div>
 
@@ -22,12 +22,12 @@ Nori is a free multipurpose bot for Fluxer, built with TypeScript and [fluxer.js
 - Multiple commands for server utilities and entertainment
 - Portuguese (Brazil) and English (US) language support
 - Accept the Terms of Service and choose your language through message reactions
-- Simple command system using the `n.` prefix
+- Simple command system using the `-` prefix
 
 ## Getting Started
 
 1. Add Nori to your server.
-2. Use `n.help` to view the available commands.
+2. Use `-help` to view the available commands.
 3. On your first use, react to the message to accept the Terms of Service and select your language.
 
 ## Development
@@ -56,13 +56,13 @@ npm run dev
 
 ### Technologies
 
-- [fluxer.js](https://fluxer.js.org) (`@fluxerjs/core`, `@fluxerjs/voice`)
+- [fluxer.js](https://fluxer.js.org) (`@fluxerjs/core`, `@fluxerjs/voice`, `@fluxerjs/sharding`)
 - `lavalink-client`
 - MongoDB
 - TypeScript
 
 ## Links
 
-- Website: https://noribot.xyz
-- Terms of Service: https://noribot.xyz/terms
-- Privacy Policy: https://noribot.xyz/privacy
+- Website: https://noribot.website
+- Terms of Service: https://noribot.website/terms
+- Privacy Policy: https://noribot.website/privacy

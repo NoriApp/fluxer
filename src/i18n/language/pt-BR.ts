@@ -64,7 +64,7 @@ export default {
         otherCategory: 'Outros',
         categoryField: 'Categoria',
         aliasesField: 'Atalhos',
-        invite: 'Clique aqui para me adicionar ao seu servidor',
+        invite: 'Me adicione!',
         footer: (prefix: string) => `Use ${prefix}help <comando> para ver os detalhes`,
       },
       ping: {
