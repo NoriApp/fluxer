@@ -1,3 +1,4 @@
+import config from '#nori/config/default.config.js';
 import { voiceManager } from '#base';
 import { queues } from './state.js';
 import { clearAlone, clearIdle, watchAlone } from './idle.js';
@@ -17,6 +18,7 @@ export const enqueue = ({ guildId, voiceChannelId, textChannelId, tracks }: Enqu
       textChannelId,
       tracks: [],
       current: null,
+      volume: config.music.defaultVolume,
       busy: false,
       ownerId: tracks[0]?.requester.id ?? '',
       idleTimer: null,

@@ -12,6 +12,7 @@ import { type GuildQueue, type QueueTrack } from './types.js';
 import { openLoadstream, openNodeYoutube, openTranscode, openYtDlp } from './sources.js';
 import { nodeAccess } from './node.js';
 import { clearIdle, notify, scheduleIdle } from './idle.js';
+import { applyVolume } from './volume.js';
 
 type PlayResult = 'finished' | 'failed' | 'skipped';
 
@@ -140,6 +141,7 @@ const playTrack = async (queue: GuildQueue, track: QueueTrack) => {
 
   if (!queue.connection) {
     queue.connection = await joinVoice(queue.guildId, channel);
+    applyVolume(queue);
   }
 
   const connection = queue.connection;

@@ -31,6 +31,7 @@ export type GuildQueue = {
   textChannelId: string;
   tracks: QueueTrack[];
   current: QueueTrack | null;
+  volume: number;
   busy: boolean;
   ownerId: string;
   idleTimer: NodeJS.Timeout | null;
