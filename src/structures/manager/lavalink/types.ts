@@ -35,6 +35,7 @@ export type GuildQueue = {
   ownerId: string;
   idleTimer: NodeJS.Timeout | null;
   aloneTimer: NodeJS.Timeout | null;
+  aloneSeen: boolean;
   aloneWatcher: NodeJS.Timeout | null;
   skip: (() => void) | null;
   connection: Awaited<ReturnType<typeof voiceManager.join>> | null;

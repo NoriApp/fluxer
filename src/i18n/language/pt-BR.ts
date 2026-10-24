@@ -32,7 +32,7 @@ export default {
             .join(' e '),
         queueEnded: (time: string) =>
           `A fila acabou. Você tem ${time} para adicionar outra música antes de eu encerrar o player.`,
-        alone: (time: string) => `Estou sozinha na call. Se ninguém entrar em ${time}, vou encerrar o player.`,
+        alone: (time: string) => `Estou sozinho na call. Se ninguém entrar em ${time}, vou encerrar o player.`,
       },
     },
   },

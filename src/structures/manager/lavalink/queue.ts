@@ -21,6 +21,7 @@ export const enqueue = ({ guildId, voiceChannelId, textChannelId, tracks }: Enqu
       ownerId: tracks[0]?.requester.id ?? '',
       idleTimer: null,
       aloneTimer: null,
+      aloneSeen: false,
       aloneWatcher: null,
       skip: null,
       connection: null,

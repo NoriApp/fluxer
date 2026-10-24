@@ -63,51 +63,57 @@ export const scheduleIdle = (queue: GuildQueue) => {
   announce(queue, (language, time) => language.general.music.player.queueEnded(time)).catch(() => null);
 };
 
-const countListeners = (queue: GuildQueue) => {
-  const states = voiceManager.voiceStates.get(queue.guildId);
+type VoiceChange = { userId: string; channelId: string | null };
+
+const countListeners = (queue: GuildQueue, change?: VoiceChange) => {
+  const members = new Map(voiceManager.voiceStates.get(queue.guildId) ?? []);
   const botId = client.user?.id;
 
-  if (!states) return 0;
+  if (change) members.set(change.userId, change.channelId);
 
   let count = 0;
 
-  for (const [userId, channelId] of states) {
+  for (const [userId, channelId] of members) {
     if (userId !== botId && channelId === queue.voiceChannelId) count++;
   }
 
   return count;
 };
 
+const evaluate = (queue: GuildQueue, change?: VoiceChange) => {
+  if (queues.get(queue.guildId) !== queue) {
+    clearAlone(queue);
+    return;
+  }
+
+  if (!queue.connection) return;
+
+  if (countListeners(queue, change) > 0) {
+    queue.aloneSeen = true;
+
+    if (queue.aloneTimer) {
+      clearTimeout(queue.aloneTimer);
+      queue.aloneTimer = null;
+    }
+
+    return;
+  }
+
+  if (!queue.aloneSeen || queue.aloneTimer) return;
+
+  queue.aloneTimer = setTimeout(() => closeQueue(queue), config.music.disconnectTime);
+
+  announce(queue, (language, time) => language.general.music.player.alone(time)).catch(() => null);
+};
+
+export const refreshAlone = (guildId: string, change?: VoiceChange) => {
+  const queue = queues.get(guildId);
+
+  if (queue) evaluate(queue, change);
+};
+
 export const watchAlone = (queue: GuildQueue) => {
   if (queue.aloneWatcher) return;
 
-  let seen = false;
-
-  const tick = () => {
-    if (queues.get(queue.guildId) !== queue) {
-      clearAlone(queue);
-      return;
-    }
-
-    if (!queue.connection) return;
-
-    if (countListeners(queue) > 0) {
-      seen = true;
-
-      if (queue.aloneTimer) {
-        clearTimeout(queue.aloneTimer);
-        queue.aloneTimer = null;
-      }
-
-      return;
-    }
-
-    if (!seen || queue.aloneTimer) return;
-
-    queue.aloneTimer = setTimeout(() => closeQueue(queue), config.music.disconnectTime);
-
-    announce(queue, (language, time) => language.general.music.player.alone(time)).catch(() => null);
-  };
-
-  queue.aloneWatcher = setInterval(tick, ALONE_CHECK_MS);
+  queue.aloneWatcher = setInterval(() => evaluate(queue), ALONE_CHECK_MS);
 };
