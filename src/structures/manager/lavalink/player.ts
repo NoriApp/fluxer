@@ -19,10 +19,17 @@ const END_GRACE_MS = 20000;
 const TAIL_MS = 1200;
 const POLL_MS = 250;
 const TRACKSTREAM_COOLDOWN_MS = 300000;
+const ANNOUNCE_TIMEOUT_MS = 5000;
 
 let trackstreamSkipUntil = 0;
 
-const playSource = (queue: GuildQueue, connection: any, track: QueueTrack, source: AudioSource) =>
+const playSource = (
+  queue: GuildQueue,
+  connection: any,
+  track: QueueTrack,
+  source: AudioSource,
+  announce: () => Promise<void>,
+) =>
   new Promise<PlayResult>((resolve) => {
     const startedAt = Date.now();
     let begunAt = startedAt;
@@ -95,20 +102,14 @@ const playSource = (queue: GuildQueue, connection: any, track: QueueTrack, sourc
 
     }
 
-    connection
-      .play(source.url ?? stream)
+    announce()
+      .then(() => (done ? undefined : connection.play(source.url ?? stream)))
       .then(() => {
         if (done) return;
 
         started = true;
         begunAt = Date.now();
         queue.current = track;
-
-        sendNowPlaying({
-          guildId: queue.guildId,
-          textChannelId: queue.textChannelId,
-          track,
-        }).catch(() => {});
 
         if (source.url) waitRemaining();
       })
@@ -142,6 +143,26 @@ const playTrack = async (queue: GuildQueue, track: QueueTrack) => {
   }
 
   const connection = queue.connection;
+
+  let announced: Promise<void> | null = null;
+
+  const announce = () => {
+    if (!announced) {
+      announced = Promise.race([
+        sendNowPlaying({
+          guildId: queue.guildId,
+          textChannelId: queue.textChannelId,
+          track,
+        }).then(
+          () => undefined,
+          () => undefined,
+        ),
+        new Promise<void>((resolve) => setTimeout(resolve, ANNOUNCE_TIMEOUT_MS)),
+      ]);
+    }
+
+    return announced;
+  };
 
   let skipped = false;
   const markSkipped = () => {
@@ -251,7 +272,7 @@ const playTrack = async (queue: GuildQueue, track: QueueTrack) => {
       });
     }
 
-    const result = await playSource(queue, connection, track, source);
+    const result = await playSource(queue, connection, track, source, announce);
 
     if (result === 'failed' && name === 'trackstream') {
       trackstreamBlocked = true;

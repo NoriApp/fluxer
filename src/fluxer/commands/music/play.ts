@@ -101,7 +101,7 @@ createCommand({
           (name) => permissions.names[name as keyof typeof permissions.names] ?? name,
         );
 
-        await respond(simple(permissions.missing(names.join(', ')))).catch(() => null);
+        await ctx.reply({ content: permissions.missing(names.join(', ')) }).catch(() => null);
         return;
       }
     }
