@@ -73,7 +73,6 @@ export default {
         nothingPlaying: 'Nothing is playing right now.',
         notInVoice: 'You need to be in a voice channel.',
         notInSameVoice: 'You need to be in the same voice channel as me.',
-        alreadyPaused: 'The player is already paused.',
         paused: (title: string) => `Paused: **${title}**`,
       },
       resume: {
@@ -82,6 +81,17 @@ export default {
         notInSameVoice: 'You need to be in the same voice channel as me.',
         notPaused: 'The player is not paused.',
         resumed: (title: string) => `Resuming: **${title}**`,
+      },
+      queue: {
+        empty: 'The queue is empty.',
+        title: 'Music queue',
+        nowPlaying: 'Now playing',
+        upNext: 'Up next',
+        nothingNext: 'There are no more songs in the queue.',
+        requestedBy: (username: string) => `requested by ${username}`,
+        invalidPage: (max: number) => `Invalid page. Use a number between 1 and ${max}.`,
+        footer: (page: number, pages: number, total: number) =>
+          `Page ${page}/${pages} • ${total} ${total === 1 ? 'song' : 'songs'} in the queue`,
       },
       nowPlaying: (title: string) => `Now playing: **${title}**`,
       skipped: 'Song skipped.',

@@ -2,7 +2,7 @@ import { EmbedBuilder } from '@fluxerjs/core';
 import { createCommand } from '#base';
 import config from '#nori/config/default.config.js';
 import { Category, setDescription } from '#nori/lib/category.js';
-import { getQueue, pauseQueue } from '#nori/structures/manager/lavalink.js';
+import { getQueue, pauseQueue, resumeQueue } from '#nori/structures/manager/lavalink.js';
 
 createCommand({
   name: 'pause',
@@ -41,12 +41,15 @@ createCommand({
       return;
     }
 
+    const title = queue.current.title;
+
     if (queue.paused) {
-      await respond(m.alreadyPaused);
+      if (resumeQueue(ctx.guildId)) {
+        await respond(ctx.t.commands.music.resume.resumed(title));
+      }
+
       return;
     }
-
-    const title = queue.current.title;
 
     if (!pauseQueue(ctx.guildId)) {
       await respond(m.nothingPlaying);

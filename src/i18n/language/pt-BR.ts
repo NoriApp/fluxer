@@ -70,7 +70,6 @@ export default {
         nothingPlaying: 'Não há nada tocando no momento.',
         notInVoice: 'Você precisa estar em um canal de voz.',
         notInSameVoice: 'Você precisa estar no mesmo canal de voz que eu.',
-        alreadyPaused: 'O player já está pausado.',
         paused: (title: string) => `Música pausada: **${title}**`,
       },
       resume: {
@@ -79,6 +78,17 @@ export default {
         notInSameVoice: 'Você precisa estar no mesmo canal de voz que eu.',
         notPaused: 'O player não está pausado.',
         resumed: (title: string) => `Retomando: **${title}**`,
+      },
+      queue: {
+        empty: 'A fila está vazia.',
+        title: 'Fila de músicas',
+        nowPlaying: 'Tocando agora',
+        upNext: 'Próximas',
+        nothingNext: 'Não há mais músicas na fila.',
+        requestedBy: (username: string) => `pedido por ${username}`,
+        invalidPage: (max: number) => `Página inválida. Use um número entre 1 e ${max}.`,
+        footer: (page: number, pages: number, total: number) =>
+          `Página ${page}/${pages} • ${total} ${total === 1 ? 'música' : 'músicas'} na fila`,
       },
       nowPlaying: (title: string) => `Tocando agora: **${title}**`,
       skipped: 'Música pulada.',
