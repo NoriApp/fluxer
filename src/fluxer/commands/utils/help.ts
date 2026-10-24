@@ -78,6 +78,7 @@ createCommand({
 
     const embed = new EmbedBuilder()
       .setTitle(h.title)
+      .setDescription(`[${h.invite}](${config.links.invite})`)
       .setColor(config.color)
       .addFields(
         ...[...groups].map(([name, lines]) => ({

@@ -12,6 +12,7 @@ export default createConfig({
   },
   links: {
     website: 'https://noribot.website/',
+    invite: 'https://web.fluxer.app/oauth2/authorize?client_id=1562075950991020032&scope=bot&permissions=18014673390914888',
   },
   clusters: [
     {
