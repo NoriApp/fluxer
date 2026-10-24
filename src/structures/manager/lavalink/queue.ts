@@ -1,6 +1,6 @@
 import { voiceManager } from '#base';
 import { queues } from './state.js';
-import { clearIdle } from './idle.js';
+import { clearAlone, clearIdle, watchAlone } from './idle.js';
 import { type EnqueueOptions } from './types.js';
 import { run } from './player.js';
 
@@ -18,12 +18,16 @@ export const enqueue = ({ guildId, voiceChannelId, textChannelId, tracks }: Enqu
       tracks: [],
       current: null,
       busy: false,
+      ownerId: tracks[0]?.requester.id ?? '',
       idleTimer: null,
+      aloneTimer: null,
+      aloneWatcher: null,
       skip: null,
       connection: null,
     };
 
     queues.set(guildId, queue);
+    watchAlone(queue);
   }
 
   queue.voiceChannelId = voiceChannelId;
@@ -70,6 +74,7 @@ export const destroyQueue = (guildId: string) => {
 
   queues.delete(guildId);
   clearIdle(queue);
+  clearAlone(queue);
 
   queue.tracks.length = 0;
   queue.skip?.();

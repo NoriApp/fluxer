@@ -32,7 +32,10 @@ export type GuildQueue = {
   tracks: QueueTrack[];
   current: QueueTrack | null;
   busy: boolean;
+  ownerId: string;
   idleTimer: NodeJS.Timeout | null;
+  aloneTimer: NodeJS.Timeout | null;
+  aloneWatcher: NodeJS.Timeout | null;
   skip: (() => void) | null;
   connection: Awaited<ReturnType<typeof voiceManager.join>> | null;
 };

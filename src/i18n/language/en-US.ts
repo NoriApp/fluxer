@@ -13,7 +13,7 @@ export default {
     },
     permissions: {
       missing: (permissions: string) =>
-        `> [!WARNING]\n> I don't have sufficient permission to execute this command; I need the following permission(s): ${permissions}`,
+        `> [!WARNING]\n> I don't have enough permissions to run this command, I need the following permission(s): ${permissions}`,
       names: {
         ViewChannel: 'View Channel',
         SendMessages: 'Send Messages',
@@ -21,6 +21,20 @@ export default {
         AttachFiles: 'Attach Files',
         Connect: 'Connect',
         Speak: 'Speak',
+      },
+    },
+    music: {
+      player: {
+        duration: (minutes: number, seconds: number) =>
+          [
+            minutes > 0 && `${minutes} ${minutes === 1 ? 'minute' : 'minutes'}`,
+            seconds > 0 && `${seconds} ${seconds === 1 ? 'second' : 'seconds'}`,
+          ]
+            .filter(Boolean)
+            .join(' and '),
+        queueEnded: (time: string) =>
+          `The queue has ended. You have ${time} to add another song before I close the player.`,
+        alone: (time: string) => `I'm alone in the call. If nobody joins within ${time}, I'll close the player.`,
       },
     },
   },

@@ -21,6 +21,20 @@ export default {
         Speak: 'Falar em Canal de Voz',
       },
     },
+    music: {
+      player: {
+        duration: (minutes: number, seconds: number) =>
+          [
+            minutes > 0 && `${minutes} ${minutes === 1 ? 'minuto' : 'minutos'}`,
+            seconds > 0 && `${seconds} ${seconds === 1 ? 'segundo' : 'segundos'}`,
+          ]
+            .filter(Boolean)
+            .join(' e '),
+        queueEnded: (time: string) =>
+          `A fila acabou. Você tem ${time} para adicionar outra música antes de eu encerrar o player.`,
+        alone: (time: string) => `Estou sozinha na call. Se ninguém entrar em ${time}, vou encerrar o player.`,
+      },
+    },
   },
   commands: {
     music: {
