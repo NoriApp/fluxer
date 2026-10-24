@@ -67,7 +67,7 @@ export default {
         footer: (prefix: string) => `Use ${prefix}help <comando> para ver os detalhes`,
       },
       ping: {
-        title: 'Pong!',
+        title: `${constants.emojis.static.pingpong} Pong!`,
         unavailable: 'n/d',
         latencyField: 'Latência',
         gateway: 'Gateway',

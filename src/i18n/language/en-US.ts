@@ -70,7 +70,7 @@ export default {
         footer: (prefix: string) => `Use ${prefix}help <command> to see the details`,
       },
       ping: {
-        title: 'Pong!',
+        title: `${constants.emojis.static.pingpong} Pong!`,
         unavailable: 'n/a',
         latencyField: 'Latency',
         gateway: 'Gateway',

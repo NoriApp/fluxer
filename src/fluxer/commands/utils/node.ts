@@ -21,6 +21,9 @@ const formatDuration = (ms: number) => {
     .join(' ');
 };
 
+const statusEmoji = (online: boolean) =>
+  (online ? constants.emojis.static.online : constants.emojis.static.offline) ?? '';
+
 createCommand({
   name: 'node',
   category: Category.Utilities,
@@ -39,7 +42,7 @@ createCommand({
     const nodes = await getAllNodeStatus();
 
     const fields = nodes.map((node) => ({
-      name: node.id,
+      name: `${statusEmoji(node.online)} ${node.id}`.trim(),
       value: node.online
         ? [
             `${n.status}: ${n.online}`,
