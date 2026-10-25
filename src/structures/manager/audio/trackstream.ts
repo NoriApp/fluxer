@@ -146,7 +146,7 @@ export const openTrackstream = async (
   }
 
   if (!isOpusFormat(direct.format) && !(await looksLikeWebm(direct.url))) {
-    console.log(`[Nori] trackstream format "${direct.format || '?'}" goes through ffmpeg.`);
+    console.log(`[Nori] trackstream format "${direct.format || '?'}" goes through ffmpeg (${track.uri ?? 'no uri'}).`);
 
     return {
       label: `trackstream (${direct.format || '?'} -> ffmpeg)`,
