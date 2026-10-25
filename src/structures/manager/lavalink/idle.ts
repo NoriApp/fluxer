@@ -39,7 +39,7 @@ export const clearAlone = (queue: GuildQueue) => {
   }
 };
 
-const closeQueue = (queue: GuildQueue) => {
+export const closeQueue = (queue: GuildQueue) => {
   if (queues.get(queue.guildId) !== queue) return;
 
   queues.delete(queue.guildId);

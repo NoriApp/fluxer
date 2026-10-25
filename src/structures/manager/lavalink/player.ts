@@ -19,7 +19,7 @@ import {
   openYtDlp,
 } from './sources.js';
 import { nodeAccess } from './node.js';
-import { clearIdle, notify, scheduleIdle } from './idle.js';
+import { clearIdle, closeQueue, notify, scheduleIdle } from './idle.js';
 import { applyVolume } from './volume.js';
 
 type PlayResult = 'finished' | 'failed' | 'skipped';
@@ -366,7 +366,15 @@ export const run = async (queue: GuildQueue) => {
         try {
           await playTrack(queue, track, from);
         } catch (error) {
-          console.error(`[Nori] playTrack failed for "${track.title}":`, (error as Error)?.message ?? error);
+          const reason = (error as Error)?.message ?? String(error);
+
+          console.error(`[Nori] playTrack failed for "${track.title}":`, reason);
+
+          if (reason.includes('Voice channel not found')) {
+            closeQueue(queue);
+            return;
+          }
+
           await notify(queue.textChannelId, `Não consegui tocar **${track.title}**.`);
           break;
         }
