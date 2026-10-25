@@ -34,6 +34,8 @@ export default {
           `A fila acabou. Você tem ${time} para adicionar outra música antes de eu encerrar o player.`,
         nowPlaying: 'Tocando agora',
         requestedBy: (username: string) => `Pedido por ${username}`,
+        idleLeft: (time: string) =>
+          `Como ninguém colocou uma música em ${time}, estou saindo da call por enquanto. Quando quiser ouvir algo de novo, é só me chamar!`,
         kicked: 'Fui expulso da call por um moderador e encerrei o player.',
         alone: (time: string) => `Estou sozinho na call. Se ninguém entrar em ${time}, vou encerrar o player.`,
       },

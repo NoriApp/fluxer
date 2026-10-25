@@ -36,6 +36,8 @@ export default {
           `The queue has ended. You have ${time} to add another song before I close the player.`,
         nowPlaying: 'Now playing',
         requestedBy: (username: string) => `Requested by ${username}`,
+        idleLeft: (time: string) =>
+          `Nobody added a song within ${time}, so I'm heading out of the call for now. Just call me whenever you want to listen to something again!`,
         kicked: 'I was removed from the call by a moderator, so I closed the player.',
         alone: (time: string) => `I'm alone in the call. If nobody joins within ${time}, I'll close the player.`,
       },

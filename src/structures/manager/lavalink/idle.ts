@@ -60,7 +60,10 @@ export const scheduleIdle = (queue: GuildQueue) => {
 
   clearIdle(queue);
 
-  queue.idleTimer = setTimeout(() => closeQueue(queue), config.music.disconnectTime);
+  queue.idleTimer = setTimeout(() => {
+    announce(queue, (language, time) => language.general.music.player.idleLeft(time)).catch(() => null);
+    closeQueue(queue);
+  }, config.music.disconnectTime);
 
   announce(queue, (language, time) => language.general.music.player.queueEnded(time)).catch(() => null);
 };
