@@ -119,7 +119,7 @@ type SentMessage = {
   edit(options: { embeds: EmbedBuilder[] }): Promise<unknown>;
 };
 
-const BAR_LENGTH = 10;
+const BAR_LENGTH = 7;
 const UPDATE_INTERVAL_MS = 5000;
 
 const messages = new Map<string, SentMessage>();
