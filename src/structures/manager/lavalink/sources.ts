@@ -74,7 +74,7 @@ const NODE_YT_CANDIDATES = 3;
 
 const NODE_YT_FIRST_TIMEOUT = 12000;
 
-const searchNodeYoutube = async (guildId: string, track: QueueTrack): Promise<NodeCandidate[]> => {
+const fetchNodeCandidates = async (guildId: string, track: QueueTrack): Promise<NodeCandidate[]> => {
   const node = nodeAccess();
   const cleanTitle = track.title.replace(/\(.*?\)|\[.*?\]/g, ' ');
   const query = `${track.author} ${cleanTitle}`.replace(/\s+/g, ' ').trim();
@@ -134,6 +134,29 @@ const searchNodeYoutube = async (guildId: string, track: QueueTrack): Promise<No
   );
 };
 
+const candidateCache = new WeakMap<QueueTrack, Promise<NodeCandidate[]>>();
+
+const searchNodeYoutube = (guildId: string, track: QueueTrack) => {
+  let pending = candidateCache.get(track);
+
+  if (!pending) {
+    pending = fetchNodeCandidates(guildId, track)
+      .catch(() => [] as NodeCandidate[])
+      .then((list) => {
+        if (list.length === 0) candidateCache.delete(track);
+        return list;
+      });
+
+    candidateCache.set(track, pending);
+  }
+
+  return pending;
+};
+
+export const prefetchCandidates = (guildId: string, track: QueueTrack) => {
+  if (!isYoutubeTrack(track)) void searchNodeYoutube(guildId, track);
+};
+
 export const openNodeYoutube = async (
   guildId: string,
   track: QueueTrack,
@@ -168,13 +191,18 @@ export const openTrackstreamYoutube = async (
 ): Promise<AudioSource | null> => {
   const original = (track.raw as { encoded?: string }).encoded;
 
-  const targets =
-    isYoutubeTrack(track) && original
-      ? [{ encoded: original, uri: track.uri }]
-      : (await searchNodeYoutube(guildId, track)).map((candidate) => ({
-          encoded: candidate.encoded,
-          uri: candidate.url as string | null,
-        }));
+  let targets: Array<{ encoded: string; uri: string | null }>;
+
+  if (isYoutubeTrack(track) && original) {
+    targets = [{ encoded: original, uri: track.uri }];
+  } else {
+    const started = Date.now();
+    const found = await searchNodeYoutube(guildId, track);
+
+    console.log(`[Nori] YouTube candidates ready in ${Date.now() - started}ms.`);
+
+    targets = found.map((candidate) => ({ encoded: candidate.encoded, uri: candidate.url as string | null }));
+  }
 
   for (const target of targets) {
     if (cancelled()) return null;

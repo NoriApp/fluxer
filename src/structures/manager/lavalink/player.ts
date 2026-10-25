@@ -13,6 +13,7 @@ import {
   isYoutubeTrack,
   openLoadstream,
   openNodeYoutube,
+  prefetchCandidates,
   openTrackstreamYoutube,
   openTranscode,
   openYtDlp,
@@ -119,6 +120,10 @@ const playSource = (
         started = true;
         begunAt = Date.now();
         queue.current = track;
+
+        const upcoming = queue.tracks[0];
+        if (upcoming) prefetchCandidates(queue.guildId, upcoming);
+
         queue.playhead = () =>
           Math.min(
             (source.startMs ?? 0) + (Date.now() - begunAt),
@@ -151,6 +156,8 @@ const joinVoice = async (guildId: string, channel: VoiceChannel) => {
 const playTrack = async (queue: GuildQueue, track: QueueTrack, startFrom = 0) => {
   const channel = client.channels.get(queue.voiceChannelId);
   if (!(channel instanceof VoiceChannel)) throw new Error('Voice channel not found.');
+
+  prefetchCandidates(queue.guildId, track);
 
   if (!queue.connection) {
     queue.connection = await joinVoice(queue.guildId, channel);
