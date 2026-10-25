@@ -111,11 +111,46 @@ type NowPlayingOptions = {
   textChannelId: string;
   track: QueueTrack;
   ownerId?: string;
+  getPosition?: () => number | null;
 };
 
-const messages = new Map<string, { delete(): Promise<unknown> }>();
+type SentMessage = {
+  delete(): Promise<unknown>;
+  edit(options: { embeds: EmbedBuilder[] }): Promise<unknown>;
+};
+
+const BAR_LENGTH = 10;
+const UPDATE_INTERVAL_MS = 5000;
+
+const messages = new Map<string, SentMessage>();
+const updaters = new Map<string, NodeJS.Timeout>();
+
+const emoji = (key: string) => constants.emojis.static[key] ?? '';
+
+const progressBar = (position: number, duration: number) => {
+  const ratio = duration > 0 ? Math.min(Math.max(position / duration, 0), 1) : 0;
+  const index = Math.min(BAR_LENGTH - 1, Math.floor(ratio * BAR_LENGTH));
+
+  return Array.from({ length: BAR_LENGTH }, (_, slot) => {
+    if (slot < index) return emoji('barfull');
+    if (slot > index) return emoji('bar');
+    if (index === 0) return emoji('barstart');
+    if (index === BAR_LENGTH - 1) return emoji('barend');
+    return emoji('barplaying');
+  }).join('');
+};
+
+const stopUpdates = (guildId: string) => {
+  const timer = updaters.get(guildId);
+  if (!timer) return;
+
+  clearInterval(timer);
+  updaters.delete(guildId);
+};
 
 export async function deleteNowPlaying(guildId: string) {
+  stopUpdates(guildId);
+
   const message = messages.get(guildId);
   messages.delete(guildId);
   if (message) await message.delete().catch(() => null);
@@ -127,35 +162,91 @@ const trackEmbed = async (track: QueueTrack, ownerId?: string) => {
   const clean = track.title.replace(/[[\]]/g, '');
   const title = track.uri ? `[${clean}](${track.uri})` : `**${clean}**`;
 
-  const embed = new EmbedBuilder()
-    .setColor(config.color)
-    .setAuthor({ name: p.nowPlaying })
-    .setDescription(`${title}\n${track.author} • ${TimeFormat.toDotted(track.duration)}`)
-    .setFooter({ text: p.requestedBy(track.requester.username) });
+  return (position: number) => {
+    const embed = new EmbedBuilder()
+      .setColor(config.color)
+      .setAuthor({ name: p.nowPlaying })
+      .setDescription(
+        [
+          title,
+          track.author,
+          '',
+          progressBar(position, track.duration),
+          `${TimeFormat.toDotted(position)} / ${TimeFormat.toDotted(track.duration)}`,
+        ].join('\n'),
+      )
+      .setFooter({ text: p.requestedBy(track.requester.username) });
 
-  if (track.artworkUrl) embed.setThumbnail(track.artworkUrl);
+    if (track.artworkUrl) embed.setThumbnail(track.artworkUrl);
 
-  return embed;
+    return embed;
+  };
 };
 
-export async function sendNowPlaying({ guildId, textChannelId, track, ownerId }: NowPlayingOptions) {
+const startUpdates = (
+  guildId: string,
+  message: SentMessage,
+  track: QueueTrack,
+  build: (position: number) => EmbedBuilder,
+  getPosition: () => number | null,
+) => {
+  let lastPosition = 0;
+  let lastBar = progressBar(0, track.duration);
+
+  const timer = setInterval(async () => {
+    const position = getPosition();
+
+    if (position === null) {
+      stopUpdates(guildId);
+      return;
+    }
+
+    if (position < lastPosition) return;
+
+    lastPosition = position;
+
+    const bar = progressBar(position, track.duration);
+    if (bar === lastBar) return;
+
+    lastBar = bar;
+
+    await message.edit({ embeds: [build(position)] }).catch(() => null);
+  }, UPDATE_INTERVAL_MS);
+
+  updaters.set(guildId, timer);
+};
+
+export async function sendNowPlaying({
+  guildId,
+  textChannelId,
+  track,
+  ownerId,
+  getPosition,
+}: NowPlayingOptions) {
   await deleteNowPlaying(guildId);
 
   const { effective } = await getGuildMusic(guildId);
 
-  let message: unknown = null;
-
   if (effective === 'canvas' && track.artworkUrl) {
     const image = await trackCanva(track.artworkUrl, track.title, track.author, 0, track.duration);
 
-    message = await client.channels
+    const sent = await client.channels
       .send(textChannelId, { files: [{ name: 'track.png', data: image }] })
       .catch(() => null);
-  } else {
-    message = await client.channels
-      .send(textChannelId, { embeds: [await trackEmbed(track, ownerId)] })
-      .catch(() => null);
+
+    if (sent) messages.set(guildId, sent as SentMessage);
+    return;
   }
 
-  if (message) messages.set(guildId, message as { delete(): Promise<unknown> });
+  const build = await trackEmbed(track, ownerId);
+
+  const sent = await client.channels.send(textChannelId, { embeds: [build(0)] }).catch(() => null);
+
+  if (!sent) return;
+
+  const message = sent as SentMessage;
+
+  messages.set(guildId, message);
+
+  if (getPosition) startUpdates(guildId, message, track, build, getPosition);
 }

@@ -24,6 +24,11 @@ const ANNOUNCE_TIMEOUT_MS = 5000;
 
 let trackstreamSkipUntil = 0;
 
+const YOUTUBE_URL = /^https?:\/\/(?:[a-z0-9-]+\.)?(?:youtube\.com|youtu\.be)\//i;
+
+const isYoutubeTrack = (track: QueueTrack) =>
+  String(track.info?.sourceName ?? '').toLowerCase().startsWith('youtube') || YOUTUBE_URL.test(track.uri ?? '');
+
 const playSource = (
   queue: GuildQueue,
   connection: any,
@@ -167,6 +172,7 @@ const playTrack = async (queue: GuildQueue, track: QueueTrack, startFrom = 0) =>
           textChannelId: queue.textChannelId,
           track,
           ownerId: queue.ownerId,
+          getPosition: () => (queue.current === track ? (queue.playhead?.() ?? queue.position) : null),
         }).then(
           () => undefined,
           () => undefined,
@@ -234,7 +240,7 @@ const playTrack = async (queue: GuildQueue, track: QueueTrack, startFrom = 0) =>
         async () => {
           if (resumeFrom > 0) return null;
 
-          if (trackstreamBlocked) {
+          if (trackstreamBlocked && !isYoutubeTrack(track)) {
             console.log('[Nori] trackstream blocked, skipping loadstream.');
             return null;
           }
