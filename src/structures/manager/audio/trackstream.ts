@@ -5,6 +5,29 @@ const WEBM_MAGIC = Buffer.from([0x1a, 0x45, 0xdf, 0xa3]);
 
 const isOpusFormat = (format: string) => /webm|opus/i.test(format);
 
+const youtubeWatchUrl = (uri: string | null) => {
+  if (!uri) return null;
+
+  try {
+    const url = new URL(uri);
+    const host = url.hostname.replace(/^(www|m|music)\./, '');
+
+    if (host === 'youtu.be') {
+      const id = url.pathname.slice(1);
+      return id ? `https://www.youtube.com/watch?v=${id}` : null;
+    }
+
+    if (host === 'youtube.com') {
+      const id = url.searchParams.get('v');
+      return id ? `https://www.youtube.com/watch?v=${id}` : null;
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
+};
+
 const getTrackstream = async (node: NodeAccess, encoded: string, guildId: string) => {
   const response = await fetch(
     `${node.baseUrl}/v4/trackstream?encodedTrack=${encodeURIComponent(encoded)}&itag=251`,
@@ -28,9 +51,11 @@ const getTrackstream = async (node: NodeAccess, encoded: string, guildId: string
 const refreshEncoded = async (node: NodeAccess, uri: string | null, guildId: string) => {
   if (!uri || !/^https?:\/\//i.test(uri)) return null;
 
+  const identifier = youtubeWatchUrl(uri) ?? uri;
+
   try {
     const response = await fetch(
-      `${node.baseUrl}/v4/loadtracks?identifier=${encodeURIComponent(uri)}`,
+      `${node.baseUrl}/v4/loadtracks?identifier=${encodeURIComponent(identifier)}`,
       { headers: { ...node.headers, 'Guild-Id': guildId }, signal: AbortSignal.timeout(30000) },
     );
     if (!response.ok) return null;
@@ -89,6 +114,13 @@ export const openTrackstream = async (
 ): Promise<AudioSource | null> => {
   let encoded = track.encoded;
   let direct: { url: string; format: string } | null = null;
+
+  const watch = youtubeWatchUrl(track.uri);
+
+  if (watch && watch !== track.uri) {
+    const fresh = await refreshEncoded(node, track.uri, guildId);
+    if (fresh) encoded = fresh;
+  }
 
   try {
     direct = await getTrackstream(node, encoded, guildId);
