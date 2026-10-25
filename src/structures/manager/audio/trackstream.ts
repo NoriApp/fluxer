@@ -88,9 +88,26 @@ const looksLikeWebm = async (url: string) => {
   }
 };
 
-const openUrlStream = async (url: string): Promise<AudioSource> => {
+const probeStatus = async (url: string, headers?: Record<string, string>) => {
+  try {
+    const response = await fetch(url, { headers, signal: AbortSignal.timeout(10000) });
+    await response.body?.cancel().catch(() => null);
+
+    return response.status;
+  } catch {
+    return 0;
+  }
+};
+
+const isOk = (status: number) => status >= 200 && status < 300;
+
+const openUrlStream = async (
+  url: string,
+  headers?: Record<string, string>,
+  label = 'trackstream (stream)',
+): Promise<AudioSource> => {
   const controller = new AbortController();
-  const response = await fetch(url, { signal: controller.signal });
+  const response = await fetch(url, { headers, signal: controller.signal });
 
   if (!response.ok || !response.body) throw new Error(`stream status ${response.status}`);
 
@@ -98,7 +115,7 @@ const openUrlStream = async (url: string): Promise<AudioSource> => {
   stream.on('error', () => null);
 
   return {
-    label: 'trackstream (stream)',
+    label,
     stream,
     close: () => {
       controller.abort();
@@ -156,7 +173,23 @@ export const openTrackstream = async (
   }
 
   if (track.duration > 0) {
-    return { label: 'trackstream (zero-copy)', url: direct.url, close: () => {} };
+    const plain = await probeStatus(direct.url);
+
+    if (isOk(plain)) {
+      return { label: 'trackstream (zero-copy)', url: direct.url, close: () => {} };
+    }
+
+    const ranged = await probeStatus(direct.url, { Range: 'bytes=0-' });
+
+    console.log(`[Nori] trackstream URL answered ${plain} without Range and ${ranged} with Range.`);
+
+    if (isOk(ranged)) {
+      const source = await openUrlStream(direct.url, { Range: 'bytes=0-' }, 'trackstream (range stream)');
+
+      return Object.assign(source, { seekUrl: direct.url });
+    }
+
+    return null;
   }
 
   return openUrlStream(direct.url);

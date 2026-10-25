@@ -215,11 +215,12 @@ export const openTrackstreamYoutube = async (
 
     if (!direct) continue;
 
-    const url = direct.url ?? direct.transcodeUrl;
+    const seekUrl = (direct as { seekUrl?: string }).seekUrl;
+    const url = direct.url ?? direct.transcodeUrl ?? seekUrl;
 
     if (!url || /mpegts|\.m3u8/i.test(`${direct.label} ${url}`)) continue;
 
-    if (startMs === 0 && direct.url) return direct;
+    if (startMs === 0 && (direct.url || direct.stream)) return direct;
 
     return openTranscode(guildId, url, track.duration, 'trackstream (ffmpeg)', startMs);
   }
