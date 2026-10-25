@@ -1,6 +1,5 @@
-import { LavalinkManager } from 'lavalink-client';
 import { type GuildQueue } from './types.js';
 
-export const state: { manager: LavalinkManager | null } = { manager: null };
+export const state = { ready: false };
 
 export const queues = new Map<string, GuildQueue>();

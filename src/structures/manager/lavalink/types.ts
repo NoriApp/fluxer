@@ -1,5 +1,4 @@
 import { voiceManager } from '#base';
-import { type Player } from 'lavalink-client';
 
 export type SearchOptions = {
   guildId: string;
@@ -54,7 +53,21 @@ export type EnqueueOptions = {
   tracks: QueueTrack[];
 };
 
-export type FoundTrack = Awaited<ReturnType<Player['search']>>['tracks'][number];
+export type FoundTrack = {
+  encoded: string;
+  info: {
+    identifier: string;
+    title: string;
+    author: string;
+    duration: number;
+    uri: string | null;
+    artworkUrl: string | null;
+    isStream: boolean;
+    sourceName: string;
+    [key: string]: unknown;
+  };
+  pluginInfo?: unknown;
+};
 
 export type SearchOutput = {
   playlist: string | null;

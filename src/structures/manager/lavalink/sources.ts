@@ -5,9 +5,14 @@ import {
   createTranscoder,
   resolveAudioUrl,
 } from '#nori/structures/manager/yt-dlp.js';
-import { pcmToWebm, type AudioSource } from '#nori/structures/manager/audio.js';
+import { openTrackstream, pcmToWebm, type AudioSource } from '#nori/structures/manager/audio.js';
 import { type QueueTrack } from './types.js';
 import { nodeAccess } from './node.js';
+
+const YOUTUBE_URL = /^https?:\/\/(?:[a-z0-9-]+\.)?(?:youtube\.com|youtu\.be)\//i;
+
+export const isYoutubeTrack = (track: QueueTrack) =>
+  String(track.info?.sourceName ?? '').toLowerCase().startsWith('youtube') || YOUTUBE_URL.test(track.uri ?? '');
 
 type LoadstreamOverride = {
   encoded: string;
@@ -150,6 +155,45 @@ export const openNodeYoutube = async (
     });
 
     if (source) return source;
+  }
+
+  return null;
+};
+
+export const openTrackstreamYoutube = async (
+  guildId: string,
+  track: QueueTrack,
+  startMs: number,
+  cancelled: () => boolean,
+): Promise<AudioSource | null> => {
+  const original = (track.raw as { encoded?: string }).encoded;
+
+  const targets =
+    isYoutubeTrack(track) && original
+      ? [{ encoded: original, uri: track.uri }]
+      : (await searchNodeYoutube(guildId, track)).map((candidate) => ({
+          encoded: candidate.encoded,
+          uri: candidate.url as string | null,
+        }));
+
+  for (const target of targets) {
+    if (cancelled()) return null;
+
+    const direct = await openTrackstream(
+      nodeAccess(),
+      { encoded: target.encoded, uri: target.uri, duration: track.duration },
+      guildId,
+    ).catch(() => null);
+
+    if (!direct) continue;
+
+    const url = direct.url ?? direct.transcodeUrl;
+
+    if (!url || /mpegts|\.m3u8/i.test(`${direct.label} ${url}`)) continue;
+
+    if (startMs === 0 && direct.url) return direct;
+
+    return openTranscode(guildId, url, track.duration, 'trackstream (ffmpeg)', startMs);
   }
 
   return null;

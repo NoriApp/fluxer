@@ -1,47 +1,43 @@
-import { LavalinkManager } from 'lavalink-client';
 import config from '#nori/config/default.config.js';
 import { type NodeAccess } from '#nori/structures/manager/audio.js';
 import { state } from './state.js';
 
-export const initLavalink = async (user: { id: string; username: string }) => {
+export const initLavalink = async (_user?: { id: string; username: string }) => {
+  await Promise.all(
+    config.nodes.map(async (node) => {
+      const protocol = node.secure ? 'https' : 'http';
 
-  state.manager = new LavalinkManager({
-    nodes: config.nodes.map((node) => ({ ...node })),
-    sendToShard: () => {},
-    autoSkip: false,
-    client: { id: user.id, username: user.username },
-  });
+      try {
+        const response = await fetch(`${protocol}://${node.host}:${node.port}/v4/info`, {
+          headers: { Authorization: node.authorization, 'Client-Name': 'Nori/1.0.0' },
+          signal: AbortSignal.timeout(10000),
+        });
 
-  state.manager.nodeManager.on('connect', (node) => {
-    console.log(`[Nori] Node ${node.id} connected.`);
-  });
+        if (!response.ok) throw new Error(`status ${response.status}`);
 
-  state.manager.nodeManager.on('error', (node, error) => {
-    console.error(`[Nori] Node ${node.id} error:`, error.message);
-  });
+        console.log(`[Nori] Node ${node.id} connected.`);
+      } catch (error) {
+        console.error(`[Nori] Node ${node.id} error:`, (error as Error).message);
+      }
+    }),
+  );
 
-  await state.manager.init({ id: user.id, username: user.username });
-
-  return state.manager;
+  state.ready = true;
 };
 
-export const isLavalinkReady = () => state.manager !== null;
+export const isLavalinkReady = () => state.ready;
 
 export const nodeAccess = (): NodeAccess => {
   const node = config.nodes[0];
   const protocol = node.secure ? 'https' : 'http';
-  const sessionId = (state.manager?.nodeManager.nodes.get(node.id) as any)?.sessionId as string | undefined;
 
-  const access: NodeAccess = {
+  return {
     baseUrl: `${protocol}://${node.host}:${node.port}`,
     headers: {
       Authorization: node.authorization,
       'Client-Name': 'Nori/1.0.0',
-      ...(sessionId ? { 'Session-Id': sessionId } : {}),
     },
   };
-
-  return access;
 };
 
 export type NodeStatus = {

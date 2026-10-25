@@ -9,7 +9,14 @@ import { resolveAudioUrl, stopEncoder } from '#nori/structures/manager/yt-dlp.js
 import { client, voiceManager } from '#base';
 import { VoiceChannel } from '@fluxerjs/core';
 import { type GuildQueue, type QueueTrack } from './types.js';
-import { openLoadstream, openNodeYoutube, openTranscode, openYtDlp } from './sources.js';
+import {
+  isYoutubeTrack,
+  openLoadstream,
+  openNodeYoutube,
+  openTrackstreamYoutube,
+  openTranscode,
+  openYtDlp,
+} from './sources.js';
 import { nodeAccess } from './node.js';
 import { clearIdle, notify, scheduleIdle } from './idle.js';
 import { applyVolume } from './volume.js';
@@ -23,11 +30,6 @@ const TRACKSTREAM_COOLDOWN_MS = 300000;
 const ANNOUNCE_TIMEOUT_MS = 5000;
 
 let trackstreamSkipUntil = 0;
-
-const YOUTUBE_URL = /^https?:\/\/(?:[a-z0-9-]+\.)?(?:youtube\.com|youtu\.be)\//i;
-
-const isYoutubeTrack = (track: QueueTrack) =>
-  String(track.info?.sourceName ?? '').toLowerCase().startsWith('youtube') || YOUTUBE_URL.test(track.uri ?? '');
 
 const playSource = (
   queue: GuildQueue,
@@ -197,7 +199,7 @@ const playTrack = async (queue: GuildQueue, track: QueueTrack, startFrom = 0) =>
   const encoded = (track.raw as any).encoded as string | undefined;
 
   let resumeFrom = startFrom;
-  let trackstreamBlocked = false;
+  let trackstreamBlocked = !isYoutubeTrack(track);
 
   const attempts: Array<[string, () => Promise<AudioSource | null>]> = [];
 
@@ -206,7 +208,7 @@ const playTrack = async (queue: GuildQueue, track: QueueTrack, startFrom = 0) =>
       [
         'trackstream',
         async () => {
-          if (resumeFrom > 0) return null;
+          if (resumeFrom > 0 || !isYoutubeTrack(track)) return null;
 
           if (Date.now() < trackstreamSkipUntil) {
             trackstreamBlocked = true;
@@ -233,6 +235,14 @@ const playTrack = async (queue: GuildQueue, track: QueueTrack, startFrom = 0) =>
           }
 
           return openTranscode(queue.guildId, direct.transcodeUrl, track.duration, direct.label);
+        },
+      ],
+      [
+        'trackstream-youtube',
+        async () => {
+          if (isYoutubeTrack(track) && resumeFrom === 0) return null;
+
+          return openTrackstreamYoutube(queue.guildId, track, resumeFrom, () => skipped);
         },
       ],
       [

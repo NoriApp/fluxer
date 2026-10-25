@@ -7,7 +7,7 @@ const isOpusFormat = (format: string) => /webm|opus/i.test(format);
 
 const getTrackstream = async (node: NodeAccess, encoded: string, guildId: string) => {
   const response = await fetch(
-    `${node.baseUrl}/v4/trackstream?encodedTrack=${encodeURIComponent(encoded)}`,
+    `${node.baseUrl}/v4/trackstream?encodedTrack=${encodeURIComponent(encoded)}&itag=251`,
     {
       headers: { ...node.headers, 'Guild-Id': guildId },
       signal: AbortSignal.timeout(15000),
