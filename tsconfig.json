@@ -12,6 +12,8 @@
     "resolveJsonModule": true,
     "declaration": true,
     "sourceMap": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "baseUrl": ".",
     "paths": {
       "#base": ["./src/index.ts"],
