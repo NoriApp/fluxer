@@ -1,6 +1,6 @@
 import type { Client } from '@fluxerjs/core';
 import { AzuraClient } from 'azurajs';
-import type { ResponseServer } from 'azurajs';
+import type { ResponseServer } from 'azurajs/types';
 import { applyDecorators, Controller, Get, Ip, Res } from 'azurajs/decorators';
 import { publishStats, readSnapshots } from '#nori/structures/utils/stats.js';
 
@@ -28,7 +28,9 @@ class RootController {
       ip,
       latency: {
         gateway: pings.length
-          ? Math.round(pings.reduce((sum, ping) => sum + ping, 0) / pings.length)
+          ? Math.round(
+              pings.reduce((sum, ping) => sum + ping, 0) / pings.length,
+            )
           : null,
         shards: shards.map((item) => ({
           id: item.id,
@@ -48,7 +50,10 @@ class BotController {
       .flatMap((item) => item.guilds)
       .sort((a, b) => a.name.localeCompare(b.name));
 
-    res.json({ total: guilds.length, guilds });
+    res.json({
+      total: guilds.length,
+      guilds,
+    });
   }
 }
 
