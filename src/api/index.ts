@@ -66,5 +66,5 @@ export const startApi = async (client: Client) => {
 
   await app.listen();
 
-  console.log('[Nori] API is now online.');
+  console.log('[Nori] API is now online!');
 };
