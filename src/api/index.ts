@@ -60,7 +60,7 @@ export const startApi = async (client: Client) => {
   app.register(RootController);
   app.register(BotController);
 
-  await app.listen();
+  await app.listen(8080);
 
   console.log('[Nori] API is now online.');
 };
