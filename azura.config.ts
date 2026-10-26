@@ -1,16 +1,19 @@
-import type { AzuraConfig } from "azurajs/types";
+import type { AzuraConfig } from 'azurajs/types';
+import config from '#nori/config/default.config.js';
 
 const config: AzuraConfig = {
-  environment: "production",
+  environment: 'production',
   server: {
-    port: 8080,
-    host: "0.0.0.0",
+    port: config.api.port,
+    host: config.api.host,
+    keepAliveTimeout: 72000,
   },
   logging: {
-    level: "warn",
-    requestLogging: true,
-    timestamp: true,
-    colors: true,
+    enabled: false,
+    level: 'silent',
+    timestamp: false,
+    colors: false,
+    requestLogging: false,
   },
   debug: false,
 };

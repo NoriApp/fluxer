@@ -6,6 +6,10 @@ export default createConfig({
   locale: 'en-US',
   color: 0xDB0912,
   developerIds: ['1562066443707617281'],
+  api: {
+    port: 8080,
+    host: "0.0.0.0",
+  },
   presence: {
     status: 'dnd',
     texts: ['lost in my own world'],
