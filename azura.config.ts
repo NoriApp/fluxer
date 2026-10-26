@@ -1,23 +1,17 @@
-import type { ConfigTypes } from "azurajs/config";
+import { AzuraServer } from "azurajs";
 
-const config: ConfigTypes = {
+const app = new AzuraServer({
   environment: "production",
   server: {
     port: 8080,
-    cluster: false,
-    ipHost: true,
+    host: "0.0.0.0",
+    keepAliveTimeout: 72000,
   },
   logging: {
-    enabled: true,
-    showDetails: false,
+    level: "warn",
+    requestLogging: true,
   },
-  plugins: {
-    cors: {
-      enabled: true,
-      origins: ["*"],
-      methods: ["GET", "POST", "PUT", "DELETE"],
-    },
-  },
-};
+  debug: false,
+});
 
-export default config;
+export default app;
