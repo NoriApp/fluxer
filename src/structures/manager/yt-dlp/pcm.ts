@@ -142,6 +142,7 @@ const feedLoadstream = async (
 ) => {
   let empty = 0;
   let resumes = 0;
+  let failure: string | null = null;
   const origin = feed.ms;
 
   while (!signal.aborted && !sink.destroyed) {
@@ -183,9 +184,7 @@ const feedLoadstream = async (
       const message = (error as Error)?.message ?? String(error);
       blocked = /HTTP 403|status 403/.test(message);
 
-      if (!signal.aborted) {
-        console.error(`[Nori] loadstream at ${cursor}ms failed:`, message);
-      }
+      if (!signal.aborted) failure = message;
     } finally {
       if (stall) clearTimeout(stall);
       signal.removeEventListener('abort', abortAttempt);
@@ -205,13 +204,12 @@ const feedLoadstream = async (
     resumes += 1;
     if (resumes > MAX_RESUMES) break;
 
-    console.log(`[Nori] loadstream retrying at ${feed.ms}ms.`);
     await sleep(500);
   }
 
-  logEarlyEnd('loadstream', feed, expectedMs, signal);
-
   if (!sink.destroyed) sink.end();
+
+  return failure;
 };
 
 export const createPcmStream = async (
@@ -242,10 +240,10 @@ export const createPcmStream = async (
 
   const gate = createGate(firstTimeout);
   const feed = new PcmFeed(pcm, controller.signal, gate.open, startMs);
-  const started = Date.now();
-
   feedLoadstream(pcm, feed, url, headers, expectedMs, controller.signal, splice)
-    .then(() => gate.fail(new Error('loadstream returned no audio')))
+    .then((failure) =>
+      gate.fail(new Error(failure ? `loadstream returned no audio: ${failure}` : 'loadstream returned no audio')),
+    )
     .catch(() => gate.fail(new Error('loadstream failed')));
 
   try {
@@ -255,8 +253,6 @@ export const createPcmStream = async (
     pcm.destroy();
     throw error;
   }
-
-  console.log(`[Nori] loadstream first chunk in ${Date.now() - started}ms.`);
 
   return { stream: pcm, fedMs: () => feed.ms };
 };

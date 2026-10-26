@@ -8,6 +8,7 @@ import {
 import { openTrackstream, pcmToWebm, type AudioSource } from '#nori/structures/manager/audio.js';
 import { type QueueTrack } from './types.js';
 import { nodeAccess } from './node.js';
+import { reportError } from './report.js';
 
 const YOUTUBE_URL = /^https?:\/\/(?:[a-z0-9-]+\.)?(?:youtube\.com|youtu\.be)\//i;
 
@@ -173,7 +174,7 @@ export const openNodeYoutube = async (
       label: 'nodelink youtube (pcm -> opus)',
       firstTimeout: NODE_YT_FIRST_TIMEOUT,
     }).catch((error: Error) => {
-      console.error(`[Nori] nodelink youtube candidate failed: ${error.message}`);
+      reportError('nodelink youtube', error, { guildId });
       return null;
     });
 
@@ -196,10 +197,7 @@ export const openTrackstreamYoutube = async (
   if (isYoutubeTrack(track) && original) {
     targets = [{ encoded: original, uri: track.uri }];
   } else {
-    const started = Date.now();
     const found = await searchNodeYoutube(guildId, track);
-
-    console.log(`[Nori] YouTube candidates ready in ${Date.now() - started}ms.`);
 
     targets = found.map((candidate) => ({ encoded: candidate.encoded, uri: candidate.url as string | null }));
   }

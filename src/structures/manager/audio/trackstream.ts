@@ -1,5 +1,6 @@
 import { Readable } from 'node:stream';
 import { type AudioSource, type NodeAccess } from './types.js';
+import { reportError } from '#nori/structures/manager/lavalink/report.js';
 
 const WEBM_MAGIC = Buffer.from([0x1a, 0x45, 0xdf, 0xa3]);
 
@@ -142,7 +143,7 @@ export const openTrackstream = async (
   try {
     direct = await getTrackstream(node, encoded, guildId);
   } catch (error) {
-    console.warn(`[Nori] trackstream failed (${(error as Error).message}), refreshing track...`);
+    reportError('trackstream', error, { guildId });
 
     const fresh = await refreshEncoded(node, track.uri, guildId);
     if (!fresh) return null;
@@ -163,7 +164,6 @@ export const openTrackstream = async (
   }
 
   if (!isOpusFormat(direct.format) && !(await looksLikeWebm(direct.url))) {
-    console.log(`[Nori] trackstream format "${direct.format || '?'}" goes through ffmpeg (${track.uri ?? 'no uri'}).`);
 
     return {
       label: `trackstream (${direct.format || '?'} -> ffmpeg)`,
@@ -180,8 +180,6 @@ export const openTrackstream = async (
     }
 
     const ranged = await probeStatus(direct.url, { Range: 'bytes=0-' });
-
-    console.log(`[Nori] trackstream URL answered ${plain} without Range and ${ranged} with Range.`);
 
     if (isOk(ranged)) {
       const source = await openUrlStream(direct.url, { Range: 'bytes=0-' }, 'trackstream (range stream)');

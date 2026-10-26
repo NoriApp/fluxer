@@ -21,6 +21,7 @@ import {
 import { nodeAccess } from './node.js';
 import { clearIdle, closeQueue, notify, scheduleIdle } from './idle.js';
 import { applyVolume } from './volume.js';
+import { reportError } from './report.js';
 
 type PlayResult = 'finished' | 'failed' | 'skipped';
 
@@ -78,9 +79,6 @@ const playSource = (
         const drained = started && !connection.playing;
 
         if (drained || Date.now() >= limit) {
-          console.log(
-            `[Nori] playback ${drained ? 'drained' : 'timed out'} after ${Math.round((Date.now() - begunAt) / 1000)}s (expected ${Math.round(total / 1000)}s).`,
-          );
           timer = setTimeout(() => finish(), TAIL_MS);
           return;
         }
@@ -99,14 +97,11 @@ const playSource = (
 
     if (stream) {
       stream.once('error', (error) => {
-        console.error(`[Nori] ${source.label} stream error:`, error.message);
+        reportError(`${source.label} stream`, error, { guildId: queue.guildId, channelId: queue.textChannelId });
         finish(started ? 'finished' : 'failed');
       });
 
       stream.once('end', () => {
-        console.log(
-          `[Nori] stream ended after ${Math.round((Date.now() - startedAt) / 1000)}s of ${Math.round(track.duration / 1000)}s for "${track.title}"`,
-        );
         waitRemaining();
       });
 
@@ -133,7 +128,7 @@ const playSource = (
         if (source.url) waitRemaining();
       })
       .catch((error: unknown) => {
-        console.error(`[Nori] ${source.label} play failed:`, (error as Error)?.message ?? error);
+        reportError(`${source.label} play`, error, { guildId: queue.guildId, channelId: queue.textChannelId });
         finish(started ? 'finished' : 'failed');
       });
   });
@@ -143,9 +138,7 @@ const JOIN_RETRY_DELAY_MS = 1000;
 const joinVoice = async (guildId: string, channel: VoiceChannel) => {
   try {
     return await voiceManager.join(channel);
-  } catch (error) {
-    console.error('[Nori] voice join failed, retrying once:', (error as Error)?.message ?? error);
-
+  } catch {
     voiceManager.leave(guildId);
     await new Promise((resolve) => setTimeout(resolve, JOIN_RETRY_DELAY_MS));
 
@@ -219,7 +212,6 @@ const playTrack = async (queue: GuildQueue, track: QueueTrack, startFrom = 0) =>
 
           if (Date.now() < trackstreamSkipUntil) {
             trackstreamBlocked = true;
-            console.log('[Nori] trackstream on cooldown, skipping.');
             return null;
           }
 
@@ -236,7 +228,6 @@ const playTrack = async (queue: GuildQueue, track: QueueTrack, startFrom = 0) =>
           if (!direct.transcodeUrl) return direct;
 
           if (/mpegts|\.m3u8/i.test(`${direct.label} ${direct.transcodeUrl}`)) {
-            console.log('[Nori] trackstream returned HLS, skipping to next source.');
 
             return null;
           }
@@ -258,7 +249,6 @@ const playTrack = async (queue: GuildQueue, track: QueueTrack, startFrom = 0) =>
           if (resumeFrom > 0) return null;
 
           if (trackstreamBlocked && !isYoutubeTrack(track)) {
-            console.log('[Nori] trackstream blocked, skipping loadstream.');
             return null;
           }
 
@@ -290,7 +280,7 @@ const playTrack = async (queue: GuildQueue, track: QueueTrack, startFrom = 0) =>
     queue.skip = markSkipped;
 
     const source = await open().catch((error: Error) => {
-      console.error(`[Nori] ${name} failed:`, error.message);
+      reportError(name, error, { guildId: queue.guildId, channelId: queue.textChannelId });
       return null;
     });
 
@@ -302,8 +292,6 @@ const playTrack = async (queue: GuildQueue, track: QueueTrack, startFrom = 0) =>
       source.close();
       break;
     }
-
-    console.log(`[Nori] Playing "${track.title}" via ${source.label}.`);
 
     if (name === 'loadstream' && source.stream && track.duration > 0) {
       source.stream.once('end', () => {
@@ -333,7 +321,6 @@ const playTrack = async (queue: GuildQueue, track: QueueTrack, startFrom = 0) =>
       }
 
       resumeFrom = fed;
-      console.warn(`[Nori] "${track.title}" cut short at ${fed}ms of ${track.duration}ms, falling back.`);
     }
   }
 
@@ -368,7 +355,7 @@ export const run = async (queue: GuildQueue) => {
         } catch (error) {
           const reason = (error as Error)?.message ?? String(error);
 
-          console.error(`[Nori] playTrack failed for "${track.title}":`, reason);
+          reportError('playTrack', error, { guildId: queue.guildId, channelId: queue.textChannelId });
 
           if (reason.includes('Voice channel not found')) {
             closeQueue(queue);

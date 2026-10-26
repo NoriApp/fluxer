@@ -3,6 +3,7 @@ import { voiceManager } from '#base';
 import { queues } from './state.js';
 import { clearAlone, clearIdle, watchAlone } from './idle.js';
 import { releasePause } from './pause.js';
+import { reportError } from './report.js';
 import { type EnqueueOptions } from './types.js';
 import { run } from './player.js';
 
@@ -46,7 +47,7 @@ export const enqueue = ({ guildId, voiceChannelId, textChannelId, tracks }: Enqu
   queue.tracks.push(...tracks);
 
   run(queue).catch((error) => {
-    console.error('[Nori] queue run crashed:', (error as Error)?.message ?? error);
+    reportError('queue run', error, { guildId, channelId: queue.textChannelId });
     queue.busy = false;
   });
 };
