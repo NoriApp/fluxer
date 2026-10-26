@@ -1,17 +1,18 @@
-import { AzuraServer } from "azurajs";
+import type { AzuraConfig } from "azurajs/types";
 
-const app = new AzuraServer({
+const config: AzuraConfig = {
   environment: "production",
   server: {
     port: 8080,
     host: "0.0.0.0",
-    keepAliveTimeout: 72000,
   },
   logging: {
     level: "warn",
     requestLogging: true,
+    timestamp: true,
+    colors: true,
   },
   debug: false,
-});
+};
 
-export default app;
+export default config;
