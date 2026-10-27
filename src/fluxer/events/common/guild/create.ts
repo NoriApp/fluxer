@@ -37,7 +37,11 @@ const thanksEmbed = (guild: Guild) =>
 
 const sendThanks = async (guild: Guild) => {
   const channels = [...guild.channels.values()]
-    .filter((channel) => TEXT_CHANNEL_TYPES.has(channel.type as number) && channel.isTextBased())
+    .filter(
+      (channel) =>
+        TEXT_CHANNEL_TYPES.has(channel.type as number) &&
+        channel.isTextBased(),
+    )
     .sort(
       (a, b) =>
         Number((a as { position?: number }).position ?? 0) -
@@ -47,9 +51,14 @@ const sendThanks = async (guild: Guild) => {
 
   for (const channel of channels) {
     try {
-      await channel.send({ embeds: [thanksEmbed(guild)] });
+      const textChannel = channel as unknown as {
+        id: string;
+        send: (options: { embeds: EmbedBuilder[] }) => Promise<unknown>;
+      };
 
-      return channel.id;
+      await textChannel.send({ embeds: [thanksEmbed(guild)] });
+
+      return textChannel.id;
     } catch {}
   }
 
@@ -57,7 +66,10 @@ const sendThanks = async (guild: Guild) => {
 };
 
 const sendLog = async (guild: Guild) => {
-  const info = guild as unknown as { memberCount?: number; ownerId?: string };
+  const info = guild as unknown as {
+    memberCount?: number;
+    ownerId?: string;
+  };
 
   const embed = new EmbedBuilder()
     .setColor(config.color)
@@ -65,15 +77,26 @@ const sendLog = async (guild: Guild) => {
     .addFields(
       { name: 'Server', value: guild.name, inline: true },
       { name: 'Server ID', value: `\`${guild.id}\``, inline: true },
-      { name: 'Members', value: String(info.memberCount ?? 'Unknown'), inline: true },
-      { name: 'Owner ID', value: info.ownerId ? `\`${info.ownerId}\`` : 'Unknown', inline: true },
+      {
+        name: 'Members',
+        value: String(info.memberCount ?? 'Unknown'),
+        inline: true,
+      },
+      {
+        name: 'Owner ID',
+        value: info.ownerId ? `\`${info.ownerId}\`` : 'Unknown',
+        inline: true,
+      },
     )
     .setTimestamp();
 
   const icon = guild.iconURL();
+
   if (icon) embed.setThumbnail(icon);
 
-  await client.channels.send(config.channels.guildsId, { embeds: [embed] });
+  await client.channels.send(config.channels.guildsId, {
+    embeds: [embed],
+  });
 };
 
 createEvent({
@@ -81,7 +104,9 @@ createEvent({
   event: Events.GuildCreate,
   run: async (guild: Guild) => {
     try {
-      if ((client.uptime ?? 0) >= STARTUP_GRACE) markFreshGuild(guild.id);
+      if ((client.uptime ?? 0) >= STARTUP_GRACE) {
+        markFreshGuild(guild.id);
+      }
 
       if (!(await isNewGuild(guild.id))) return;
 
@@ -90,7 +115,10 @@ createEvent({
       await sendThanks(guild);
       await sendLog(guild);
     } catch (error) {
-      console.error(`[Nori] Guild Create handler failed for ${guild.id}:`, error);
+      console.error(
+        `[Nori] Guild Create handler failed for ${guild.id}:`,
+        error,
+      );
     }
   },
 });

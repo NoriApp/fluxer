@@ -5,3 +5,4 @@
 project.zip
 /node_modules
 /bin
+/dist
