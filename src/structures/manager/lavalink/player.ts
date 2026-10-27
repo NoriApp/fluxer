@@ -146,7 +146,7 @@ const joinVoice = async (guildId: string, channel: VoiceChannel) => {
   }
 };
 
-const playTrack = async (queue: GuildQueue, track: QueueTrack, startFrom = 0) => {
+const playTrack = async (queue: GuildQueue, track: QueueTrack, startFrom = 0, silent = false) => {
   const channel = client.channels.get(queue.voiceChannelId);
   if (!(channel instanceof VoiceChannel)) throw new Error('Voice channel not found.');
 
@@ -165,7 +165,7 @@ const playTrack = async (queue: GuildQueue, track: QueueTrack, startFrom = 0) =>
   let announced: Promise<void> | null = null;
 
   const announce = () => {
-    if (startFrom > 0) return Promise.resolve();
+    if (startFrom > 0 || silent) return Promise.resolve();
 
     if (!announced) {
       announced = Promise.race([
@@ -344,14 +344,20 @@ export const run = async (queue: GuildQueue) => {
   queue.busy = true;
   clearIdle(queue);
 
+  let lastLooped: QueueTrack | null = null;
+
   while (true) {
     while (queue.tracks.length > 0) {
       const track = queue.tracks.shift()!;
+      const silent = track === lastLooped;
+      lastLooped = null;
       let from = 0;
+      let failed = false;
+      queue.skipRequested = false;
 
       while (true) {
         try {
-          await playTrack(queue, track, from);
+          await playTrack(queue, track, from, silent);
         } catch (error) {
           const reason = (error as Error)?.message ?? String(error);
 
@@ -363,6 +369,7 @@ export const run = async (queue: GuildQueue) => {
           }
 
           await notify(queue.textChannelId, `Não consegui tocar **${track.title}**.`);
+          failed = true;
           break;
         }
 
@@ -375,6 +382,17 @@ export const run = async (queue: GuildQueue) => {
 
         from = queue.position;
       }
+
+      if (!failed && !queue.skipRequested) {
+        if (queue.loop === 'track') {
+          queue.tracks.unshift(track);
+          lastLooped = track;
+        } else if (queue.loop === 'queue' || (queue.loop === 'playlist' && track.group)) {
+          queue.tracks.push(track);
+        }
+      }
+
+      queue.skipRequested = false;
     }
 
     queue.current = null;

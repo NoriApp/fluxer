@@ -57,7 +57,7 @@ const verifyState = (state: string, secret: string) => {
   return Date.now() - Number(parts[0]) <= STATE_TTL_MS;
 };
 
-@Controller('/fluxer/oauth2')
+@Controller('/oauth2')
 export class OAuth2Controller {
   @Get('/login')
   login(@Res() res: AzuraResponse) {

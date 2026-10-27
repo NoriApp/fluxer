@@ -84,6 +84,31 @@ export default {
         notPaused: 'O player não está pausado.',
         resumed: (title: string) => `Retomando: **${title}**`,
       },
+      shuffle: {
+        nothingPlaying: 'Não há nada tocando no momento.',
+        notInVoice: 'Você precisa estar em um canal de voz.',
+        notInSameVoice: 'Você precisa estar no mesmo canal de voz que eu.',
+        notEnough: 'Não há músicas suficientes na fila para embaralhar.',
+        shuffled: (total: number) => `**${total}** ${total === 1 ? 'música embaralhada' : 'músicas embaralhadas'} na fila.`,
+      },
+      clear: {
+        nothingPlaying: 'Não há nada tocando no momento.',
+        notInVoice: 'Você precisa estar em um canal de voz.',
+        notInSameVoice: 'Você precisa estar no mesmo canal de voz que eu.',
+        empty: 'Não há músicas na fila para limpar.',
+        cleared: (total: number) => `**${total}** ${total === 1 ? 'música removida' : 'músicas removidas'} da fila.`,
+      },
+      loop: {
+        usage: (prefix: string) =>
+          `Uso correto: \`${prefix}loop <modo>\`\n\n**Modos**\n\`off\` - desativa o loop\n\`track\` - repete a música atual\n\`queue\` - repete a fila inteira\n\`playlist\` - repete a playlist`,
+        nothingPlaying: 'Não há nada tocando no momento.',
+        notInVoice: 'Você precisa estar em um canal de voz.',
+        notInSameVoice: 'Você precisa estar no mesmo canal de voz que eu.',
+        off: 'Loop desativado.',
+        track: 'Repetindo a música atual.',
+        queue: 'Repetindo a fila inteira.',
+        playlist: 'Repetindo a playlist.',
+      },
       queue: {
         empty: 'A fila está vazia.',
         title: 'Fila de músicas',

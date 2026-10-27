@@ -57,7 +57,6 @@ npm run dev
 ### Technologies
 
 - [fluxer.js](https://fluxer.js.org) (`@fluxerjs/core`, `@fluxerjs/voice`, `@fluxerjs/sharding`)
-- `lavalink-client`
 - MongoDB
 - TypeScript
 

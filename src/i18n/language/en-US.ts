@@ -87,6 +87,31 @@ export default {
         notPaused: 'The player is not paused.',
         resumed: (title: string) => `Resuming: **${title}**`,
       },
+      shuffle: {
+        nothingPlaying: 'Nothing is playing right now.',
+        notInVoice: 'You need to be in a voice channel.',
+        notInSameVoice: 'You need to be in the same voice channel as me.',
+        notEnough: 'There are not enough songs in the queue to shuffle.',
+        shuffled: (total: number) => `Shuffled **${total}** ${total === 1 ? 'song' : 'songs'} in the queue.`,
+      },
+      clear: {
+        nothingPlaying: 'Nothing is playing right now.',
+        notInVoice: 'You need to be in a voice channel.',
+        notInSameVoice: 'You need to be in the same voice channel as me.',
+        empty: 'There are no songs in the queue to clear.',
+        cleared: (total: number) => `Removed **${total}** ${total === 1 ? 'song' : 'songs'} from the queue.`,
+      },
+      loop: {
+        usage: (prefix: string) =>
+          `Correct usage: \`${prefix}loop <mode>\`\n\n**Modes**\n\`off\` - disables the loop\n\`track\` - repeats the current song\n\`queue\` - repeats the whole queue\n\`playlist\` - repeats the playlist`,
+        nothingPlaying: 'Nothing is playing right now.',
+        notInVoice: 'You need to be in a voice channel.',
+        notInSameVoice: 'You need to be in the same voice channel as me.',
+        off: 'Loop disabled.',
+        track: 'Looping the current song.',
+        queue: 'Looping the whole queue.',
+        playlist: 'Looping the playlist.',
+      },
       queue: {
         empty: 'The queue is empty.',
         title: 'Music queue',

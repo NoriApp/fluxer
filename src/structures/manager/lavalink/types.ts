@@ -21,8 +21,11 @@ export type QueueTrack = {
   duration: number;
   artworkUrl: string | null;
   requester: Requester;
+  group?: string | null;
   raw: FoundTrack;
 };
+
+export type LoopMode = 'off' | 'track' | 'queue' | 'playlist';
 
 export type GuildQueue = {
   guildId: string;
@@ -38,6 +41,8 @@ export type GuildQueue = {
   aloneSeen: boolean;
   aloneWatcher: NodeJS.Timeout | null;
   paused: boolean;
+  loop: LoopMode;
+  skipRequested: boolean;
   position: number;
   playhead: (() => number) | null;
   resume: ((replay: boolean) => void) | null;

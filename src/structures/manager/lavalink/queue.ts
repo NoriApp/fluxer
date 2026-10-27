@@ -95,6 +95,35 @@ export const resumeQueue = (guildId: string) => {
   return releasePause(queue, true);
 };
 
+export const clearQueue = (guildId: string) => {
+  const queue = queues.get(guildId);
+
+  if (!queue) {
+    return 0;
+  }
+
+  const total = queue.tracks.length;
+  queue.tracks.length = 0;
+  return total;
+};
+
+export const shuffleQueue = (guildId: string) => {
+  const queue = queues.get(guildId);
+
+  if (!queue || queue.tracks.length < 2) {
+    return 0;
+  }
+
+  const tracks = queue.tracks;
+
+  for (let i = tracks.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [tracks[i], tracks[j]] = [tracks[j], tracks[i]];
+  }
+
+  return tracks.length;
+};
+
 export const stopQueue = (guildId: string) => {
   const queue = queues.get(guildId);
 
