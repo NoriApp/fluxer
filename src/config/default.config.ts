@@ -11,7 +11,7 @@ export default createConfig({
     host: "0.0.0.0",
     oauth2: {
       clientSecret: env.CLIENT_SECRET,
-      redirectUri: 'http://localhost:5173/callback',
+      redirectUri: 'https://nori.maribot.xyz/callback',
       scopes: ['identify'],
     },
   },
