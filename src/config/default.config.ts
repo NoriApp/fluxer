@@ -11,7 +11,7 @@ export default createConfig({
     host: "0.0.0.0",
     oauth2: {
       clientSecret: env.CLIENT_SECRET,
-      redirectUri: 'https://nori.maribot.xyz/callback',
+      redirectUri: 'https://nori.discloud.app/callback',
       scopes: ['identify'],
     },
   },
