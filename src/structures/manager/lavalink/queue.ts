@@ -1,10 +1,11 @@
+import { randomUUID } from 'node:crypto';
 import config from '#nori/config/default.config.js';
 import { voiceManager } from '#base';
 import { queues } from './state.js';
 import { clearAlone, clearIdle, watchAlone } from './idle.js';
 import { releasePause } from './pause.js';
 import { reportError } from './report.js';
-import { type EnqueueOptions } from './types.js';
+import { type EnqueueOptions, type LoopMode } from './types.js';
 import { run } from './player.js';
 
 export const getQueue = (guildId: string) => queues.get(guildId) ?? null;
@@ -28,6 +29,8 @@ export const enqueue = ({ guildId, voiceChannelId, textChannelId, tracks }: Enqu
       aloneSeen: false,
       aloneWatcher: null,
       paused: false,
+      loop: 'off',
+      skipRequested: false,
       position: 0,
       playhead: null,
       resume: null,
@@ -44,6 +47,10 @@ export const enqueue = ({ guildId, voiceChannelId, textChannelId, tracks }: Enqu
   queue.textChannelId = textChannelId;
 
   clearIdle(queue);
+
+  const group = tracks.length > 1 ? randomUUID() : null;
+  for (const track of tracks) track.group = group;
+
   queue.tracks.push(...tracks);
 
   run(queue).catch((error) => {
@@ -56,6 +63,7 @@ export const skipTrack = (guildId: string) => {
   const queue = queues.get(guildId);
 
   if (queue?.paused) {
+    queue.skipRequested = true;
     releasePause(queue, false);
     return true;
   }
@@ -64,6 +72,7 @@ export const skipTrack = (guildId: string) => {
     return false;
   }
 
+  queue.skipRequested = true;
   queue.skip();
   return true;
 };
@@ -132,8 +141,20 @@ export const stopQueue = (guildId: string) => {
   }
 
   queue.tracks.length = 0;
+  queue.skipRequested = true;
   releasePause(queue, false);
   queue.skip?.();
+  return true;
+};
+
+export const setLoopMode = (guildId: string, mode: LoopMode) => {
+  const queue = queues.get(guildId);
+
+  if (!queue) {
+    return false;
+  }
+
+  queue.loop = mode;
   return true;
 };
 
@@ -149,6 +170,7 @@ export const destroyQueue = (guildId: string) => {
   clearAlone(queue);
 
   queue.tracks.length = 0;
+  queue.skipRequested = true;
   releasePause(queue, false);
   queue.skip?.();
   queue.current = null;
