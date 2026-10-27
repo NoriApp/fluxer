@@ -10,7 +10,7 @@
   },
   "imports": {
     "#base": "./dist/index.js",
-    "#nori/*": "./dist/*.js"
+    "#nori/*": "./dist/*"
   },
   "dependencies": {
     "@fluxerjs/core": "^3.3.0",
