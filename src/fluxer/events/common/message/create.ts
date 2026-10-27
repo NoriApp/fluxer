@@ -3,10 +3,13 @@ import { client, commands, createEvent, voiceManager } from '#base';
 import config from '#nori/config/default.config.js';
 import { db } from '#nori/db/index.js';
 import { resolveLanguage } from '#nori/i18n/index.js';
+import { blocksCommand, formatRemaining, type BlacklistData } from '#nori/lib/blacklist.js';
 import { claimMessage, isFreshGuild } from '#nori/structures/functions/client/info/claim.js';
 
 const isBotMention = (content: string, botId?: string) =>
   !!botId && (content === `<@${botId}>` || content === `<@!${botId}>`);
+
+type UserData = { language?: string; blacklist?: BlacklistData };
 
 createEvent({
   name: 'Message Create',
@@ -18,8 +21,8 @@ createEvent({
 
     const [guild, user] = (await Promise.all([
       db.guild.findOne({ guildId }).select('prefix').lean(),
-      db.user.findOne({ userId: message.author.id }).select('language').lean(),
-    ])) as [{ prefix?: string } | null, { language?: string } | null];
+      db.user.findOne({ userId: message.author.id }).select('language blacklist').lean(),
+    ])) as [{ prefix?: string } | null, UserData | null];
 
     const prefix = guild?.prefix || config.prefix;
 
@@ -40,6 +43,19 @@ createEvent({
     if (isFreshGuild(guildId) && !(await claimMessage(guildId, message.id))) return;
 
     const t = resolveLanguage(user?.language ?? config.locale);
+
+    const isDeveloper = (config.developerIds as readonly string[]).includes(message.author.id);
+
+    const blacklist = user?.blacklist;
+
+    if (blocksCommand(blacklist, command.category) && !isDeveloper) {
+      const remaining = formatRemaining(blacklist?.expiresAt ?? null);
+
+      await message
+        .reply(t.general.blacklisted(blacklist?.reason ?? null, blacklist?.category ?? null, remaining))
+        .catch(() => null);
+      return;
+    }
 
     try {
       await command.run({

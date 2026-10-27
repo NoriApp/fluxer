@@ -5,6 +5,8 @@ export default {
     error: '> [!CAUTION]\n> Thank you so much for reporting this bug! It has been forwarded to my development team.',
     guildOnly: 'This command can only be used in servers.',
     noPermission: "You don't have permission to use this command.",
+    blacklisted: (reason: string | null, scope: string | null, remaining: string | null) =>
+      `${constants.emojis.static.barred} You are blacklisted and can't use ${scope ? `the **${scope}** commands` : 'my commands'}.${reason ? `\nReason: ${reason}` : ''}${remaining ? `\nExpires in: ${remaining}` : ''}`,
     mention: (prefix: string) => `Hi! I'm **Nori**, a multifunctional bot. Use \`${prefix}help\` to see my commands.`,
     terms: {
       doneTitle: 'All set!',
@@ -174,6 +176,30 @@ export default {
         status: (guildId: string, enabled: boolean) =>
           `Premium for server \`${guildId}\`: **${enabled ? 'enabled' : 'disabled'}**.`,
         failed: "I couldn't change the premium right now. Try again.",
+      },
+      blacklist: {
+        usage: (prefix: string, categories: string) =>
+          `Correct usage:\n\`${prefix}blacklist add <user id> <category|all> <duration|perm> [reason]\`\n\`${prefix}blacklist remove <user id>\`\n\`${prefix}blacklist check <user id>\`\n\`${prefix}blacklist list\`\n\n**Categories:** all, ${categories}\n**Duration:** \`30m\`, \`12h\`, \`7d\`, \`2w\` or \`perm\``,
+        all: 'All',
+        permanent: 'Permanent',
+        noReason: 'No reason provided.',
+        protected: "You can't blacklist a developer.",
+        invalidScope: (categories: string) => `Invalid category. Use \`all\` or one of: ${categories}`,
+        invalidDuration: 'Invalid duration. Use something like `30m`, `12h`, `7d`, `2w` or `perm`.',
+        added: (id: string, scope: string, time: string) =>
+          `${constants.emojis.static.hammer} <@${id}> was added to the blacklist.\nCategory: ${scope}\nDuration: ${time}`,
+        updated: (id: string, scope: string, time: string) =>
+          `${constants.emojis.static.hammer} The blacklist of <@${id}> was updated.\nCategory: ${scope}\nDuration: ${time}`,
+        removed: (id: string) => `\`${id}\` was removed from the blacklist.`,
+        notFound: (id: string) => `\`${id}\` is not in the blacklist.`,
+        check: (id: string, reason: string, authorId: string, scope: string, time: string) =>
+          `${constants.emojis.static.barred} <@${id}> is blacklisted.\nReason: ${reason}\nCategory: ${scope}\nDuration: ${time}\nAdded by: <@${authorId}>`,
+        empty: 'The blacklist is empty.',
+        listTitle: (total: number) => `Blacklist (${total})`,
+        entry: (id: string, scope: string, time: string, reason: string) =>
+          `\`${id}\` - ${scope} - ${time} - ${reason}`,
+        more: (amount: number) => `And ${amount} more...`,
+        failed: "I couldn't update the blacklist right now. Try again.",
       },
     },
   },

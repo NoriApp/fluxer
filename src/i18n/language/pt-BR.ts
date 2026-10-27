@@ -3,6 +3,8 @@ export default {
     error: '> [!CAUTION]\n> Muito obrigado por reportar este erro! Ele foi encaminhado para minha equipe de desenvolvedores.',
     guildOnly: 'Este comando só pode ser usado em servidores.',
     noPermission: 'Você não tem permissão para usar este comando.',
+    blacklisted: (reason: string | null, scope: string | null, remaining: string | null) =>
+      `${constants.emojis.static.barred} Você está na blacklist e não pode usar ${scope ? `os comandos de **${scope}**` : 'meus comandos'}.${reason ? `\nMotivo: ${reason}` : ''}${remaining ? `\nExpira em: ${remaining}` : ''}`,
     mention: (prefix: string) => `Olá! Eu sou a **Nori**, um bot multifunções. Use \`${prefix}help\` para ver os comandos.`,
     terms: {
       doneTitle: 'Tudo pronto!',
@@ -171,6 +173,30 @@ export default {
         status: (guildId: string, enabled: boolean) =>
           `Premium do servidor \`${guildId}\`: **${enabled ? 'ativado' : 'desativado'}**.`,
         failed: 'Não consegui alterar o premium agora. Tente novamente.',
+      },
+      blacklist: {
+        usage: (prefix: string, categories: string) =>
+          `Uso correto:\n\`${prefix}blacklist add <id do usuário> <categoria|all> <duração|perm> [motivo]\`\n\`${prefix}blacklist remove <id do usuário>\`\n\`${prefix}blacklist check <id do usuário>\`\n\`${prefix}blacklist list\`\n\n**Categorias:** all, ${categories}\n**Duração:** \`30m\`, \`12h\`, \`7d\`, \`2w\` ou \`perm\``,
+        all: 'Todas',
+        permanent: 'Permanente',
+        noReason: 'Sem motivo informado.',
+        protected: 'Você não pode colocar um desenvolvedor na blacklist.',
+        invalidScope: (categories: string) => `Categoria inválida. Use \`all\` ou uma destas: ${categories}`,
+        invalidDuration: 'Duração inválida. Use algo como `30m`, `12h`, `7d`, `2w` ou `perm`.',
+        added: (id: string, scope: string, time: string) =>
+          `${constants.emojis.static.hammer} <@${id}> foi adicionado à blacklist.\nCategoria: ${scope}\nDuração: ${time}`,
+        updated: (id: string, scope: string, time: string) =>
+          `${constants.emojis.static.hammer} A blacklist de <@${id}> foi atualizada.\nCategoria: ${scope}\nDuração: ${time}`,
+        removed: (id: string) => `\`${id}\` foi removido da blacklist.`,
+        notFound: (id: string) => `\`${id}\` não está na blacklist.`,
+        check: (id: string, reason: string, authorId: string, scope: string, time: string) =>
+          `${constants.emojis.static.barred} <@${id}> está na blacklist.\nMotivo: ${reason}\nCategoria: ${scope}\nDuração: ${time}\nAdicionado por: <@${authorId}>`,
+        empty: 'A blacklist está vazia.',
+        listTitle: (total: number) => `Blacklist (${total})`,
+        entry: (id: string, scope: string, time: string, reason: string) =>
+          `\`${id}\` - ${scope} - ${time} - ${reason}`,
+        more: (amount: number) => `E mais ${amount}...`,
+        failed: 'Não consegui atualizar a blacklist agora. Tente novamente.',
       },
     },
   },

@@ -4,6 +4,14 @@ const userSchema = new mongoose.Schema(
   {
     userId: { type: String, required: true, unique: true, index: true },
     language: { type: String, default: null },
+    blacklist: {
+      active: { type: Boolean, default: false, index: true },
+      reason: { type: String, default: null },
+      authorId: { type: String, default: null },
+      category: { type: String, default: null },
+      expiresAt: { type: Date, default: null },
+      createdAt: { type: Date, default: null },
+    },
   },
   { timestamps: true },
 );
