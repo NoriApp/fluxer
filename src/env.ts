@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 const schema = z.object({
   TOKEN: z.string().min(1),
+  CLIENT_SECRET: z.string().min(1),
   OBISIDIAN_HOST: z.string().min(1),
   OBISIDIAN_PORT: z.coerce.number().int().min(1).max(65535),
   OBISIDIAN_PASSWORD: z.string().min(1),

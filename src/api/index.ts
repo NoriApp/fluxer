@@ -3,6 +3,7 @@ import { AzuraServer } from 'azurajs/core';
 import type { AzuraResponse } from 'azurajs/types';
 import { Controller, Get, Ip, Res } from 'azurajs/decorators';
 import { publishStats, readSnapshots } from '#nori/structures/utils/stats.js';
+import { OAuth2Controller } from '#nori/api/controllers/fluxer/oauth2.js';
 import config from '#nori/config/default.config.js';
 
 let botClient: Client | null = null;
@@ -60,6 +61,7 @@ export const startApi = async (client: Client) => {
 
   app.register(RootController);
   app.register(BotController);
+  app.register(OAuth2Controller);
 
   await app.listen(config.api.port);
 

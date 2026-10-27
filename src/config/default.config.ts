@@ -9,6 +9,11 @@ export default createConfig({
   api: {
     port: 8080,
     host: "0.0.0.0",
+    oauth2: {
+      clientSecret: env.CLIENT_SECRET,
+      redirectUri: 'http://localhost:5173/callback',
+      scopes: ['identify'],
+    },
   },
   presence: {
     status: 'dnd',
@@ -17,6 +22,9 @@ export default createConfig({
   links: {
     website: 'https://noribot.website/',
     invite: 'https://web.fluxer.app/oauth2/authorize?client_id=1562075950991020032&scope=bot&permissions=18014673390914888',
+    fluxer: {
+      api: 'https://api.fluxer.app/v1',
+    },
   },
   clusters: [
     {
