@@ -9,7 +9,7 @@ let json: any;
 try {
     json = JSON.parse(readFileSync(jsonPath, 'utf-8'));
 } catch (err) {
-    console.log(TAG, `Não foi possível encontrar o constants.json em: ${jsonPath}`);
+    logger.error(TAG, `Não foi possível encontrar o constants.json em: ${jsonPath}`);
     process.exit(1);
 }
 
@@ -121,9 +121,9 @@ try {
         constants: Object.freeze(processedConstants)
     });
 
-    console.log(TAG, 'Constants successfully validated and converted.');
+    logger.info(TAG, 'Constants successfully validated and converted.');
 } catch (error) {
-    console.log(TAG, error instanceof Error ? error.message : error);
+    logger.error(TAG, error instanceof Error ? error.message : error);
     process.exit(1);
 }
 

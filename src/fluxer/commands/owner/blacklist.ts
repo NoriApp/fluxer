@@ -118,31 +118,32 @@ createCommand({
       return;
     }
 
-    const scopeInput = ctx.args[2]?.toLowerCase();
-    const durationInput = ctx.args[3]?.toLowerCase();
+    const tokens = ctx.args.slice(2);
+    let category: string | null = null;
+    let duration: number | null = null;
+    let hasCategory = false;
+    let hasDuration = false;
 
-    if (!scopeInput || !durationInput) {
-      await respond(b.usage(ctx.prefix, categoryNames));
-      return;
+    while (tokens.length > 0) {
+      const last = tokens[tokens.length - 1]?.toLowerCase() ?? '';
+      const parsed = parseDuration(last);
+      const found = categories.find((item) => item.key === last || item.value.toLowerCase() === last);
+
+      if (!hasDuration && parsed !== undefined) {
+        duration = parsed;
+        hasDuration = true;
+      } else if (!hasCategory && (last === 'all' || found)) {
+        category = found?.value ?? null;
+        hasCategory = true;
+      } else {
+        break;
+      }
+
+      tokens.pop();
     }
 
-    const found = categories.find((item) => item.key === scopeInput || item.value.toLowerCase() === scopeInput);
-
-    if (scopeInput !== 'all' && !found) {
-      await respond(b.invalidScope(categoryNames));
-      return;
-    }
-
-    const duration = parseDuration(durationInput);
-
-    if (duration === undefined) {
-      await respond(b.invalidDuration);
-      return;
-    }
-
-    const category = found?.value ?? null;
     const expiresAt = duration === null ? null : new Date(Date.now() + duration);
-    const reason = ctx.args.slice(4).join(' ').trim() || null;
+    const reason = tokens.join(' ').trim() || null;
 
     const result = await addBlacklist(id, reason, ctx.user.id, category, expiresAt);
 

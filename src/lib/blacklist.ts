@@ -51,7 +51,7 @@ const ensureLoaded = () => {
     })
     .catch((error: unknown) => {
       loading = null;
-      console.error('[Nori] Failed to load blacklist:', error);
+      logger.error('[Nori] Failed to load blacklist:', error);
     });
 
   return loading;

@@ -128,7 +128,7 @@ export const createGate = (timeoutMs: number) => {
 
 export const logEarlyEnd = (label: string, feed: PcmFeed, expectedMs: number, signal: AbortSignal) => {
   if (signal.aborted || expectedMs <= 0 || feed.ms >= expectedMs * EARLY_END_RATIO) return;
-  console.error(`[Nori] ${label} ended early at ${feed.ms}ms of ${expectedMs}ms.`);
+  logger.warn(`[Nori] ${label} ended early at ${feed.ms}ms of ${expectedMs}ms.`);
 };
 
 const feedLoadstream = async (

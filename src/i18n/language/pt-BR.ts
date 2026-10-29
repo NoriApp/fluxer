@@ -21,6 +21,8 @@ export default {
         AttachFiles: 'Enviar Anexos',
         Connect: 'Entrar em Canal de Voz',
         Speak: 'Falar em Canal de Voz',
+        ManageChannels: 'Gerenciar Canais',
+        ManageRoles: 'Gerenciar Cargos',
       },
     },
     music: {
@@ -126,6 +128,20 @@ export default {
       skipped: 'Música pulada.',
       failed: (title: string) => `Não consegui tocar **${title}**.`,
     },
+    moderation: {
+      lock: {
+        locked: (channel: string) => `${constants.emojis.static.lock} ${channel} foi bloqueado.`,
+        alreadyLocked: (channel: string) => `${channel} já está bloqueado.`,
+        notTextChannel: 'Este comando só pode ser usado em canais de texto.',
+        failed: 'Não consegui trancar este canal agora. Tente novamente.',
+      },
+      unlock: {
+        unlocked: (channel: string) => `${constants.emojis.static.unlock} ${channel} foi destrancado.`,
+        notLocked: (channel: string) => `${channel} não está bloqueado.`,
+        notTextChannel: 'Este comando só pode ser usado em canais de texto.',
+        failed: 'Não consegui destrancar este canal agora. Tente novamente.',
+      },
+    },
     utilities: {
       help: {
         title: 'Ajuda',
@@ -176,13 +192,11 @@ export default {
       },
       blacklist: {
         usage: (prefix: string, categories: string) =>
-          `Uso correto:\n\`${prefix}blacklist add <id do usuário> <categoria|all> <duração|perm> [motivo]\`\n\`${prefix}blacklist remove <id do usuário>\`\n\`${prefix}blacklist check <id do usuário>\`\n\`${prefix}blacklist list\`\n\n**Categorias:** all, ${categories}\n**Duração:** \`30m\`, \`12h\`, \`7d\`, \`2w\` ou \`perm\``,
+          `Uso correto:\n\`${prefix}blacklist add <id do usuário> [motivo] [duração|perm] [categoria|all]\`\n\`${prefix}blacklist remove <id do usuário>\`\n\`${prefix}blacklist check <id do usuário>\`\n\`${prefix}blacklist list\`\n\n**Categorias:** all, ${categories}\n**Duração:** \`30m\`, \`12h\`, \`7d\`, \`2w\` ou \`perm\``,
         all: 'Todas',
         permanent: 'Permanente',
         noReason: 'Sem motivo informado.',
         protected: 'Você não pode colocar um desenvolvedor na blacklist.',
-        invalidScope: (categories: string) => `Categoria inválida. Use \`all\` ou uma destas: ${categories}`,
-        invalidDuration: 'Duração inválida. Use algo como `30m`, `12h`, `7d`, `2w` ou `perm`.',
         added: (id: string, scope: string, time: string) =>
           `${constants.emojis.static.hammer} <@${id}> foi adicionado à blacklist.\nCategoria: ${scope}\nDuração: ${time}`,
         updated: (id: string, scope: string, time: string) =>

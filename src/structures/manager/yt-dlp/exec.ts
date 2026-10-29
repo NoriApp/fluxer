@@ -29,7 +29,7 @@ export const run = async (binary: string, args: string[], options: RunOptions) =
     const failure = error as { stdout?: string; stderr?: string; killed?: boolean };
     const reason = String(failure.stderr ?? '').trim().split('\n').slice(-2).join(' ');
 
-    console.error(
+    logger.error(
       `[Nori] yt-dlp failed${failure.killed ? ' (timeout)' : ''}: ${reason || 'no output'}`,
     );
 

@@ -43,10 +43,10 @@ Nori is a free multipurpose bot for Fluxer, built with TypeScript and [fluxer.js
 
 ```bash
 npm install
-cp .env.example .env
+cp .env.example .env.dev
 ```
 
-Edit the `.env` file and fill in the required credentials and configuration values.
+Edit the `.env.dev` file and fill in the required credentials and configuration values.
 
 Once configured, start the bot in development mode:
 

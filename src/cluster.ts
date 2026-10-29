@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ShardingManager } from '@fluxerjs/sharding';
+import { logger } from '#nori/structures/utils/logger.js';
 import { env } from '#nori/env.js';
 import defaultConfig from '#nori/config/default.config.js';
 import { ensureYtDlp } from '#nori/structures/manager/yt-dlp.js';
@@ -14,7 +15,7 @@ const execArgv = extension === '.ts' ? ['--import', 'tsx'] : [];
 
 const start = async () => {
   await ensureYtDlp().catch((error) => {
-    console.error('[Nori] Failed to prepare yt-dlp:', error);
+    logger.error('[Nori] Failed to prepare yt-dlp:', error);
   });
 
   for (const cluster of defaultConfig.clusters) {
@@ -29,7 +30,7 @@ const start = async () => {
     });
 
     manager.on('shardCreate', (shard) => {
-      console.log(`[Nori] Cluster ${cluster.name} created shard ${shard.id}.`);
+      logger.info(`[Nori] Cluster ${cluster.name} created shard ${shard.id}.`);
     });
 
     await manager.spawn();
@@ -37,6 +38,6 @@ const start = async () => {
 };
 
 start().catch((error) => {
-  console.error('[Nori] Cluster failed to start:', error);
+  logger.error('[Nori] Cluster failed to start:', error);
   process.exit(1);
 });

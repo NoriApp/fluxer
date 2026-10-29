@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node --env-file=.env dist/cluster.js",
     "build": "tsc",
-    "dev": "npx tsx --env-file=.env src/cluster.ts"
+    "dev": "npx tsx --env-file=.env.dev src/cluster.ts"
   },
   "imports": {
     "#base": "./dist/index.js",

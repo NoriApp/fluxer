@@ -1,4 +1,4 @@
-import { EmbedBuilder, Events, type Message } from '@fluxerjs/core';
+import { Events, type Message } from '@fluxerjs/core';
 import { client, commands, createEvent, voiceManager } from '#base';
 import config from '#nori/config/default.config.js';
 import { db } from '#nori/db/index.js';
@@ -74,23 +74,12 @@ createEvent({
       await message.reply(t.general.error).catch(() => null);
 
       const err = error instanceof Error ? error : new Error(String(error));
-      const commandGuild = await client.guilds.fetch(guildId).catch(() => null);
 
-      const errorEmbed = new EmbedBuilder()
-        .setColor(config.color)
-        .setTitle('Command Error')
-        .addFields(
-          { name: 'Command', value: `\`${command.name}\``, inline: true },
-          { name: 'Guild', value: `\`${guildId}\``, inline: true },
-          { name: 'Channel', value: `<#${message.channelId}>`, inline: true },
-          { name: 'Error', value: `\`\`\`${err.message.slice(0, 1000)}\`\`\`` },
-          { name: 'Log', value: `\`\`\`${(err.stack ?? 'No stack trace available').slice(0, 1000)}\`\`\`` },
-        )
-        .setTimestamp();
-
-      if (commandGuild) errorEmbed.setThumbnail(commandGuild.iconURL());
-
-      await client.channels.send(config.channels.errorsId, { embeds: [errorEmbed] }).catch(() => null);
+      logger.error(err.message, err, {
+        command: command.name,
+        guildId,
+        channelId: message.channelId,
+      });
     }
   },
 });

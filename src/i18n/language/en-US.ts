@@ -23,6 +23,8 @@ export default {
         AttachFiles: 'Attach Files',
         Connect: 'Connect',
         Speak: 'Speak',
+        ManageChannels: 'Manage Channels',
+        ManageRoles: 'Manage Roles',
       },
     },
     music: {
@@ -129,6 +131,20 @@ export default {
       skipped: 'Song skipped.',
       failed: (title: string) => `I couldn't play **${title}**.`,
     },
+    moderation: {
+      lock: {
+        locked: (channel: string) => `${constants.emojis.static.lock} ${channel} is now locked.`,
+        alreadyLocked: (channel: string) => `${channel} is already locked.`,
+        notTextChannel: 'This command can only be used in text channels.',
+        failed: "I couldn't lock this channel right now. Try again.",
+      },
+      unlock: {
+        unlocked: (channel: string) => `${constants.emojis.static.unlock} ${channel} is now unlocked.`,
+        notLocked: (channel: string) => `${channel} is not locked.`,
+        notTextChannel: 'This command can only be used in text channels.',
+        failed: "I couldn't unlock this channel right now. Try again.",
+      },
+    },
     utilities: {
       help: {
         title: 'Help',
@@ -179,13 +195,11 @@ export default {
       },
       blacklist: {
         usage: (prefix: string, categories: string) =>
-          `Correct usage:\n\`${prefix}blacklist add <user id> <category|all> <duration|perm> [reason]\`\n\`${prefix}blacklist remove <user id>\`\n\`${prefix}blacklist check <user id>\`\n\`${prefix}blacklist list\`\n\n**Categories:** all, ${categories}\n**Duration:** \`30m\`, \`12h\`, \`7d\`, \`2w\` or \`perm\``,
+          `Correct usage:\n\`${prefix}blacklist add <user id> [reason] [duration|perm] [category|all]\`\n\`${prefix}blacklist remove <user id>\`\n\`${prefix}blacklist check <user id>\`\n\`${prefix}blacklist list\`\n\n**Categories:** all, ${categories}\n**Duration:** \`30m\`, \`12h\`, \`7d\`, \`2w\` or \`perm\``,
         all: 'All',
         permanent: 'Permanent',
         noReason: 'No reason provided.',
         protected: "You can't blacklist a developer.",
-        invalidScope: (categories: string) => `Invalid category. Use \`all\` or one of: ${categories}`,
-        invalidDuration: 'Invalid duration. Use something like `30m`, `12h`, `7d`, `2w` or `perm`.',
         added: (id: string, scope: string, time: string) =>
           `${constants.emojis.static.hammer} <@${id}> was added to the blacklist.\nCategory: ${scope}\nDuration: ${time}`,
         updated: (id: string, scope: string, time: string) =>

@@ -4,6 +4,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { Client, Events, type Message } from '@fluxerjs/core';
 import { attachShardClientUtil } from '@fluxerjs/sharding';
 import { getVoiceManager } from '@fluxerjs/voice';
+import { logger } from '#nori/structures/utils/logger.js';
 import { env as loadedEnv } from '#nori/env.js';
 import loadedConfig from '#nori/config/default.config.js';
 import '#nori/db/index.js';
@@ -19,6 +20,7 @@ export const PREFIX = loadedConfig.prefix;
 const FLUXER_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), 'fluxer');
 
 export const client = new Client();
+logger.setClient(client);
 export const shard = process.send
   ? attachShardClientUtil(client as unknown as Parameters<typeof attachShardClientUtil>[0])
   : null;
@@ -120,7 +122,7 @@ const importAll = async (dir: string) => {
   try {
     files = await walk(dir);
   } catch (error) {
-    console.error(`[Nori] Failed to read ${path.basename(dir)} directory:`, error);
+    logger.error(`[Nori] Failed to read ${path.basename(dir)} directory:`, error);
     return;
   }
 
@@ -128,7 +130,7 @@ const importAll = async (dir: string) => {
     try {
       await import(pathToFileURL(file).href);
     } catch (error) {
-      console.error(`[Nori] Failed to load ${path.basename(file)}:`, error);
+      logger.error(`[Nori] Failed to load ${path.basename(file)}:`, error);
     }
   }
 };
@@ -143,7 +145,7 @@ const bindEvents = () => {
 
         await definition.run(...(args.length ? args : [client]));
       } catch (error) {
-        console.error(`[Nori] Event ${definition.name} failed:`, error);
+        logger.error(`[Nori] Event ${definition.name} failed:`, error);
       }
     };
 
@@ -158,12 +160,12 @@ const bootstrap = async () => {
 
   bindEvents();
 
-  console.log(`[Nori] Loaded ${new Set(commands.values()).size} commands and ${events.length} events.`);
+  logger.info(`[Nori] Loaded ${new Set(commands.values()).size} commands and ${events.length} events.`);
 
   await client.login(env.TOKEN);
 };
 
 bootstrap().catch((error) => {
-  console.error('[Nori] Failed to start:', error);
+  logger.error('[Nori] Failed to start:', error);
   process.exit(1);
 });

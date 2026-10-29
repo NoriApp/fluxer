@@ -25,7 +25,7 @@ createEvent({
 
       await client.channels.send(config.channels.guildsId, { embeds: [embed] });
     } catch (error) {
-      console.error(`[Nori] Guild Delete handler failed for ${guild.id}:`, error);
+      logger.error(`[Nori] Guild Delete handler failed for ${guild.id}:`, error, { guildId: guild.id });
     }
   },
 });

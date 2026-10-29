@@ -115,9 +115,10 @@ createEvent({
       await sendThanks(guild);
       await sendLog(guild);
     } catch (error) {
-      console.error(
+      logger.error(
         `[Nori] Guild Create handler failed for ${guild.id}:`,
         error,
+        { guildId: guild.id },
       );
     }
   },

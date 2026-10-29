@@ -51,7 +51,7 @@ const addReaction = async (prompt: Message, key: string) => {
       return;
     } catch (error) {
       if (attempt === REACTION_ATTEMPTS) {
-        console.log(`[Nori] Failed to add reaction "${key}":`, error);
+        logger.warn(`[Nori] Failed to add reaction "${key}":`, error);
         return;
       }
 

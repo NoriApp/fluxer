@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { logger } from '#nori/structures/utils/logger.js';
 
 const schema = z.object({
   TOKEN: z.string().min(1),
@@ -13,10 +14,10 @@ const schema = z.object({
 const result = schema.safeParse(process.env);
 
 if (!result.success) {
-  console.error(
-    result.error.issues
+  logger.error(
+    `[Nori] Invalid environment variables:\n${result.error.issues
       .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
-      .join('\n'),
+      .join('\n')}`,
   );
   process.exit(1);
 }

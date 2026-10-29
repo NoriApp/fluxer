@@ -20,7 +20,7 @@ const updateYtDlp = async () => {
   const { mtimeMs } = await stat(YT_DLP_PATH);
   if (Date.now() - mtimeMs < UPDATE_INTERVAL) return;
 
-  console.log('[Nori] Updating yt-dlp...');
+  logger.info('[Nori] Updating yt-dlp...');
 
   await execFileAsync(YT_DLP_PATH, ['-U'], { timeout: 60000 });
 
@@ -36,13 +36,13 @@ const downloadYtDlp = async () => {
 
   if (exists) {
     updateYtDlp().catch((error) => {
-      console.error('[Nori] yt-dlp update failed:', error?.message ?? error);
+      logger.error('[Nori] yt-dlp update failed:', error?.message ?? error);
     });
 
     return YT_DLP_PATH;
   }
 
-  console.log('[Nori] Downloading yt-dlp...');
+  logger.info('[Nori] Downloading yt-dlp...');
 
   const response = await fetch(YT_DLP_URL, { redirect: 'follow' });
   if (!response.ok) throw new Error(`yt-dlp download failed: ${response.status}`);
@@ -51,7 +51,7 @@ const downloadYtDlp = async () => {
   await writeFile(YT_DLP_PATH, Buffer.from(await response.arrayBuffer()));
   await chmod(YT_DLP_PATH, 0o755);
 
-  console.log('[Nori] yt-dlp ready.');
+  logger.success('[Nori] yt-dlp ready.');
 
   return YT_DLP_PATH;
 };

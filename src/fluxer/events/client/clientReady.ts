@@ -15,7 +15,7 @@ createEvent({
   run: async (client: Client) => {
     if (!client.user) return;
 
-    console.log(`[Nori] Logged in as ${client.user.username}.`);
+    logger.info(`[Nori] Logged in as ${client.user.username}.`);
 
     startClusterStatusRotation(client);
     startStatsPublisher(client);
@@ -28,7 +28,7 @@ createEvent({
     }
 
     await ensureYtDlp().catch((error) => {
-      console.error('[Nori] Failed to prepare yt-dlp:', error);
+      logger.error('[Nori] Failed to prepare yt-dlp:', error);
     });
 
     await initLavalink({ id: client.user.id, username: client.user.username });

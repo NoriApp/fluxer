@@ -54,7 +54,7 @@ const runFfmpeg = (
     arm();
 
     child.stderr?.on('data', (chunk) => {
-      console.error('[Nori] ffmpeg:', String(chunk).trim());
+      logger.warn('[Nori] ffmpeg:', String(chunk).trim());
     });
 
     const pump = (async () => {
@@ -71,7 +71,7 @@ const runFfmpeg = (
     const closed = new Promise<void>((done) => {
       child.once('close', () => done());
       child.once('error', (error) => {
-        console.error('[Nori] ffmpeg failed to start:', error.message);
+        logger.error('[Nori] ffmpeg failed to start:', error.message);
         done();
       });
     });
@@ -115,7 +115,7 @@ const feedTranscode = async (
     resumes += 1;
     if (resumes > MAX_RESUMES) break;
 
-    console.log(`[Nori] ffmpeg resuming at ${feed.ms}ms.`);
+    logger.info(`[Nori] ffmpeg resuming at ${feed.ms}ms.`);
     await sleep(500);
   }
 
@@ -160,7 +160,7 @@ export const createTranscoder = async (
     throw error;
   }
 
-  console.log(`[Nori] ffmpeg first chunk in ${Date.now() - started}ms.`);
+  logger.info(`[Nori] ffmpeg first chunk in ${Date.now() - started}ms.`);
 
   return { stream: pcm, fedMs: () => feed.ms };
 };

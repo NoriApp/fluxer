@@ -11,15 +11,15 @@ const SCHEMAS_DIR = path.join(path.dirname(fileURLToPath(import.meta.url)), 'sch
 mongoose.set('strictQuery', true);
 
 mongoose.connection.on('connected', () => {
-  console.log('[Nori] MongoDB connected.');
+  logger.info('[Nori] MongoDB connected.');
 });
 
 mongoose.connection.on('disconnected', () => {
-  console.warn('[Nori] MongoDB disconnected.');
+  logger.warn('[Nori] MongoDB disconnected.');
 });
 
 mongoose.connection.on('error', (error) => {
-  console.error('[Nori] MongoDB error:', error.message);
+  logger.error('[Nori] MongoDB error:', error.message);
 });
 
 const walk = async (dir: string): Promise<string[]> => {
@@ -45,7 +45,7 @@ const loadSchemas = async () => {
   try {
     files = await walk(SCHEMAS_DIR);
   } catch (error) {
-    console.error('[Nori] Failed to read schemas directory:', (error as Error)?.message ?? error);
+    logger.error('[Nori] Failed to read schemas directory:', (error as Error)?.message ?? error);
     return;
   }
 
@@ -53,7 +53,7 @@ const loadSchemas = async () => {
     try {
       await import(pathToFileURL(file).href);
     } catch (error) {
-      console.error(`[Nori] Failed to load schema ${path.basename(file)}:`, error);
+      logger.error(`[Nori] Failed to load schema ${path.basename(file)}:`, error);
     }
   }
 };
@@ -65,7 +65,7 @@ const initModels = async () => {
 
   results.forEach((result, index) => {
     if (result.status === 'rejected') {
-      console.error(`[Nori] Failed to init model ${models[index].modelName}:`, result.reason?.message ?? result.reason);
+      logger.error(`[Nori] Failed to init model ${models[index].modelName}:`, result.reason?.message ?? result.reason);
     }
   });
 };
@@ -92,7 +92,7 @@ export const disconnectDatabase = async () => {
 };
 
 connectDatabase().catch((error) => {
-  console.error('[Nori] MongoDB failed to connect:', error?.message ?? error);
+  logger.error('[Nori] MongoDB failed to connect:', error?.message ?? error);
   process.exit(1);
 });
 

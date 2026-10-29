@@ -45,7 +45,7 @@ const searchCandidates = async (
     } catch {}
   }
 
-  if (!signal?.aborted) console.log(`[Nori] ${source} found ${candidates.length} candidates.`);
+  if (!signal?.aborted) logger.info(`[Nori] ${source} found ${candidates.length} candidates.`);
 
   return candidates;
 };
@@ -86,7 +86,7 @@ const resolveUncached = async (info: TrackInfo) => {
   const binary = await ensureYtDlp();
 
   const done = (url: string) => {
-    console.log(`[Nori] Audio resolved in ${Date.now() - started}ms.`);
+    logger.info(`[Nori] Audio resolved in ${Date.now() - started}ms.`);
     return url;
   };
 

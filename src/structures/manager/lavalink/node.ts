@@ -15,9 +15,9 @@ export const initLavalink = async (_user?: { id: string; username: string }) => 
 
         if (!response.ok) throw new Error(`status ${response.status}`);
 
-        console.log(`[Nori] Node ${node.id} connected.`);
+        logger.success(`[Nori] Node ${node.id} connected.`);
       } catch (error) {
-        console.error(`[Nori] Node ${node.id} error:`, (error as Error).message);
+        logger.error(`[Nori] Node ${node.id} error:`, (error as Error).message);
       }
     }),
   );
