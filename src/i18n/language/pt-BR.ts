@@ -14,6 +14,8 @@ export default {
     permissions: {
       missing: (permissions: string) =>
         `> [!WARNING]\n> Eu não tenho permissão suficiente para executar este comando, eu preciso dessa seguinte(s) permissão: ${permissions}`,
+      userMissing: (permissions: string) =>
+        `> [!WARNING]\n> Você não tem permissão suficiente para executar este comando, você precisa dessa seguinte(s) permissão: ${permissions}`,
       names: {
         ViewChannel: 'Ver Canal',
         SendMessages: 'Enviar Mensagens',

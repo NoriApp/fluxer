@@ -4,7 +4,7 @@ import config from '#nori/config/default.config.js';
 import { Category, setDescription } from '#nori/lib/category.js';
 
 const BOT_PERMISSIONS = ['ManageChannels', 'ManageRoles'] as const;
-const USER_PERMISSION = PermissionFlags.ManageChannels;
+const USER_PERMISSIONS = ['ManageChannels'] as const;
 const LOCK_PERMISSION = PermissionFlags.SendMessages;
 
 createCommand({
@@ -22,6 +22,11 @@ createCommand({
 
     const reply = (description: string) =>
       ctx.reply({ embeds: [new EmbedBuilder().setColor(config.color).setDescription(description)] });
+
+    const translate = (missing: readonly string[]) =>
+      [...new Set(missing)]
+        .map((name) => permissions.names[name as keyof typeof permissions.names] ?? name)
+        .join(', ');
 
     const channel =
       ctx.client.channels.get(ctx.channelId) ??
@@ -41,25 +46,28 @@ createCommand({
     }
 
     const me = guild.members.me ?? (await guild.members.fetchMe().catch(() => null));
+    const botPermissions = me?.permissionsIn(channel);
 
-    if (me) {
-      const missing = me.permissionsIn(channel).missing([...BOT_PERMISSIONS]);
+    if (botPermissions && !botPermissions.has(PermissionFlags.Administrator)) {
+      const missing = botPermissions.missing([...BOT_PERMISSIONS]);
 
       if (missing.length > 0) {
-        const names = [...new Set(missing)].map(
-          (name) => permissions.names[name as keyof typeof permissions.names] ?? name,
-        );
-
-        await ctx.reply({ content: permissions.missing(names.join(', ')) });
+        await ctx.reply({ content: permissions.missing(translate(missing)) });
         return;
       }
     }
 
     const member = await guild.members.resolve(ctx.user.id).catch(() => null);
+    const memberPermissions = member?.permissionsIn(channel);
+    const isOwner = guild.ownerId === ctx.user.id;
 
-    if (!member?.permissionsIn(channel).has(USER_PERMISSION)) {
-      await ctx.reply({ content: ctx.t.general.noPermission });
-      return;
+    if (!isOwner && !memberPermissions?.has(PermissionFlags.Administrator)) {
+      const missing = memberPermissions?.missing([...USER_PERMISSIONS]) ?? [...USER_PERMISSIONS];
+
+      if (missing.length > 0) {
+        await ctx.reply({ content: permissions.userMissing(translate(missing)) });
+        return;
+      }
     }
 
     const everyone = channel.permissionOverwrites.cache.get(ctx.guildId);
